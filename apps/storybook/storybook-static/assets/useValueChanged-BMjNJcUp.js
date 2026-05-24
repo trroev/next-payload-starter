@@ -1,0 +1,1 @@
+import{n as e,o as t}from"./chunk-BEldbCjX.js";import{h as n}from"./iframe-BXALJlt9.js";import{i as r,n as i,r as a,t as o}from"./useIsoLayoutEffect-86ej3qy-.js";function s(e,t){let n=c.useRef(e),a=r(t);i(()=>{n.current!==e&&a(n.current)},[e,a]),i(()=>{n.current=e},[e])}var c,l=e((()=>{c=t(n()),o(),a()}));export{s as n,l as t};

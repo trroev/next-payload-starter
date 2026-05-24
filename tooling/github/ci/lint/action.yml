@@ -1,0 +1,17 @@
+name: 'Lint'
+description: 'Lint'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup
+      uses: ./tooling/github/setup
+
+    - name: Configure Turborepo Caching
+      uses: rharkor/caching-for-turbo@v2.3.11
+      with:
+        cache-prefix: lint_
+
+    - name: Lint
+      shell: bash
+      run: pnpm lint

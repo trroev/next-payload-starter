@@ -1,0 +1,19 @@
+name: 'Typecheck'
+description: 'Typecheck'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup
+      uses: ./tooling/github/setup
+
+    - name: Configure Turborepo Caching
+      uses: rharkor/caching-for-turbo@v2.3.11
+      with:
+        cache-prefix: typecheck_
+
+    - name: Typecheck
+      shell: bash
+      run: pnpm typecheck
+      env:
+        SKIP_ENV_VALIDATION: 'true'

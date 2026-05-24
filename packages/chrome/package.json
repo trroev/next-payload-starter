@@ -1,0 +1,37 @@
+{
+  "name": "@repo/chrome",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./components/*": "./src/components/*/index.ts",
+    "./utils/*": "./src/utils/*/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/payload": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@remixicon/react": "^4.9.0",
+    "react": "^19.2.0",
+    "schema-dts": "^2.0.0",
+    "ts-pattern": "^5.9.0"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "next": "16.2.4",
+    "payload": "^3.84.1",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.2.0"
+  }
+}

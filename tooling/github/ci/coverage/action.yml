@@ -1,0 +1,24 @@
+name: 'Coverage'
+description: 'Coverage'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup
+      uses: ./tooling/github/setup
+
+    - name: Configure Turborepo Caching
+      uses: rharkor/caching-for-turbo@v2.3.11
+      with:
+        cache-prefix: coverage_
+
+    - name: Coverage
+      shell: bash
+      run: pnpm coverage
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        directory: ./packages/utils/coverage
+        fail_ci_if_error: false
+        flags: utils

@@ -1,0 +1,38 @@
+{
+  "name": "@repo/payload",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./access/*": "./src/access/*/index.ts",
+    "./adapters/*": "./src/adapters/*/index.ts",
+    "./blocks/*": "./src/blocks/*/index.ts",
+    "./collections/*": "./src/collections/*/index.ts",
+    "./components/*": "./src/components/*/index.ts",
+    "./fields/*": "./src/fields/*/index.ts",
+    "./globals/*": "./src/globals/*/index.ts",
+    "./helpers/*": "./src/helpers/*/index.ts",
+    "./hooks/*": "./src/hooks/*/index.ts",
+    "./payload-config": "./src/payload.config.ts",
+    "./payload-types": "./src/types/payload-types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/env": "workspace:*",
+    "@payloadcms/db-mongodb": "^3.84.1",
+    "@payloadcms/plugin-cloud-storage": "^3.84.1",
+    "@payloadcms/plugin-seo": "^3.84.1",
+    "cloudinary": "^2.10.0",
+    "ts-pattern": "^5.9.0"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "payload": "^3.84.1",
+    "typescript": "^6.0.3"
+  }
+}

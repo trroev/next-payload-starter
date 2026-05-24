@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BEldbCjX.js";import{t}from"./useButton-CiuiAISb.js";var n=e((()=>{t()}));export{n as t};

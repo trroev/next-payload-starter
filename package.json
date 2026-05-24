@@ -1,0 +1,44 @@
+{
+  "name": "next-payload-starter",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "dotenvx run --convention=nextjs -- turbo run build",
+    "coverage": "turbo run coverage",
+    "dev": "dotenvx run --convention=nextjs -- turbo run dev",
+    "format": "pnpm exec biome format",
+    "format:fix": "pnpm exec biome format --write",
+    "generate:types": "turbo run generate:types",
+    "lint": "pnpm exec ultracite check",
+    "lint:fix": "pnpm exec ultracite fix",
+    "preinstall": "only-allow pnpm",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.13",
+    "@dotenvx/dotenvx": "^1.39.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
+    "only-allow": "^1.2.1",
+    "turbo": "^2.9.6",
+    "typescript": "^6.0.3",
+    "ultracite": "^7.6.2",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+  "engines": {
+    "node": ">=24"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@sentry/cli",
+      "esbuild",
+      "sharp"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx,json}": "pnpm exec biome check --write --no-errors-on-unmatched"
+  }
+}

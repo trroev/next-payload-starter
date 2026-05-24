@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  ACT: "${{ false }}"
+
+permissions:
+  contents: read
+
+jobs:
+  generate-types:
+    runs-on: ubuntu-latest
+    name: Generate Types
+    steps:
+      - uses: actions/checkout@v6
+      - name: Generate Types
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/generate-types
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v6
+      - name: Lint
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    name: Typecheck
+    steps:
+      - uses: actions/checkout@v6
+      - name: Typecheck
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+      - uses: actions/checkout@v6
+      - name: Test
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/test
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: Coverage
+    steps:
+      - uses: actions/checkout@v6
+      - name: Coverage
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/coverage

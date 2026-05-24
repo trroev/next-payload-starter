@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BEldbCjX.js";import{p as t}from"./useIsoLayoutEffect-86ej3qy-.js";var n=e((()=>{t()}));export{n as t};
