@@ -13,9 +13,9 @@ type UpdateUserAvatarInput = {
  *
  * Uses `overrideAccess: true` because the public `users` collection access
  * does not expose the `avatar` field for self-update through normal API
- * routes. Callers (`lib/actions/avatar.ts`) MUST resolve `userId` from the
- * current better-auth session via `getPayloadUserByBetterAuthId`, so the
- * update is always scoped to the authenticated identity.
+ * routes. Callers MUST resolve `userId` from the current better-auth session
+ * via `getPayloadUserByBetterAuthId`, so the update is always scoped to the
+ * authenticated identity.
  */
 export const updateUserAvatar = async ({
   userId,

@@ -4,9 +4,10 @@ import "server-only"
 
 import type { ActionResult } from "@repo/types/ActionResult"
 import { match, P } from "ts-pattern"
+import { z } from "zod"
+import { updateUserAvatar } from "~/features/profile/api/update-user-avatar"
 import { getCurrentViewer } from "~/lib/queries/current-viewer"
 import { createMediaAsset, deleteMediaAsset } from "~/lib/queries/media"
-import { updateUserAvatar } from "~/lib/queries/update-user-avatar"
 import { serverAction } from "~/lib/server-action"
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024
@@ -22,30 +23,23 @@ type AllowedAvatarMimeType = (typeof ALLOWED_AVATAR_MIME_TYPES)[number]
 const isAllowedMimeType = (value: string): value is AllowedAvatarMimeType =>
   (ALLOWED_AVATAR_MIME_TYPES as ReadonlyArray<string>).includes(value)
 
+const avatarFileSchema = z
+  .instanceof(File, { message: "Provide an image file under `avatar`." })
+  .refine((file) => file.size > 0, {
+    message: "Provide an image file under `avatar`.",
+  })
+  .refine((file) => file.size <= MAX_AVATAR_BYTES, {
+    message: "Avatar must be under 5 MB.",
+  })
+  .refine((file) => isAllowedMimeType(file.type), {
+    message: "Avatar must be a JPEG, PNG, or WebP image.",
+  })
+
+type AvatarFile = z.infer<typeof avatarFileSchema>
+
 export type UploadAvatarData = { mediaId: string; url: string }
 export type UploadAvatarResult = ActionResult<UploadAvatarData>
 export type RemoveAvatarResult = ActionResult<void>
-
-type AvatarFileValidation =
-  | { ok: true; file: File }
-  | { ok: false; message: string }
-
-const validateAvatarFile = (formData: FormData): AvatarFileValidation => {
-  const file = formData.get("avatar")
-  if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "Provide an image file under `avatar`." }
-  }
-  if (file.size > MAX_AVATAR_BYTES) {
-    return { ok: false, message: "Avatar must be under 5 MB." }
-  }
-  if (!isAllowedMimeType(file.type)) {
-    return {
-      ok: false,
-      message: "Avatar must be a JPEG, PNG, or WebP image.",
-    }
-  }
-  return { ok: true, file }
-}
 
 const extractAvatarId = (avatar: unknown): string | null =>
   match(avatar)
@@ -64,15 +58,21 @@ const uploadAvatarImpl = async (
   }
   const userDoc = viewer.user
 
-  const validation = validateAvatarFile(formData)
-  if (!validation.ok) {
-    return { status: "error", message: validation.message }
+  const parsed = avatarFileSchema.safeParse(formData.get("avatar"))
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message:
+        parsed.error.issues[0]?.message ??
+        "Provide an image file under `avatar`.",
+    }
   }
+  const file: AvatarFile = parsed.data
 
   const previousAvatarId = extractAvatarId(userDoc.avatar)
   const altLabel = userDoc.name || userDoc.email
   const media = await createMediaAsset({
-    file: validation.file,
+    file,
     alt: `${altLabel} profile photo`,
     fallbackName: "avatar",
   })
