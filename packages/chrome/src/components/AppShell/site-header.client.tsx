@@ -6,6 +6,7 @@ import { cn } from "@repo/ui/utils/cn"
 import Link from "next/link"
 import type React from "react"
 import { useEffect, useState } from "react"
+import { match, P } from "ts-pattern"
 import { MobileNav } from "../MobileNav"
 
 export type SiteHeaderProps = {
@@ -26,20 +27,27 @@ export const SiteHeader = ({
   useEffect(() => {
     let rafId: number | null = null
     const handleScroll = () => {
-      if (rafId !== null) {
-        return
-      }
-      rafId = window.requestAnimationFrame(() => {
-        setIsScrolled(window.scrollY > 0)
-        rafId = null
-      })
+      match(rafId)
+        .with(null, () => {
+          rafId = window.requestAnimationFrame(() => {
+            setIsScrolled(window.scrollY > 0)
+            rafId = null
+          })
+        })
+        .with(P.number, () => {
+          // already scheduled this frame — drop the event
+        })
+        .exhaustive()
     }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
       window.removeEventListener("scroll", handleScroll)
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId)
-      }
+      match(rafId)
+        .with(P.number, (id) => window.cancelAnimationFrame(id))
+        .with(null, () => {
+          // nothing pending
+        })
+        .exhaustive()
     }
   }, [])
 
