@@ -1,5 +1,8 @@
+import { createLogger } from "@repo/logger"
 import type { GlobalAfterChangeHook } from "payload"
 import { match, P } from "ts-pattern"
+
+const log = createLogger({ name: "payload.revalidate-homepage" })
 
 export const revalidateHomepage: GlobalAfterChangeHook = async ({ doc }) => {
   await match({
@@ -19,21 +22,18 @@ export const revalidateHomepage: GlobalAfterChangeHook = async ({ doc }) => {
             body: JSON.stringify({ tag: "homepage" }),
           })
           if (!res.ok) {
-            console.error(
-              `[revalidateHomepage] Revalidation failed: ${res.status} ${res.statusText}`
-            )
+            log
+              .withMetadata({ status: res.status, statusText: res.statusText })
+              .error("revalidation failed")
           }
         } catch (error) {
-          console.error(
-            "[revalidateHomepage] Revalidation request failed:",
-            error
-          )
+          log.withError(error).error("revalidation request failed")
         }
       }
     )
     .otherwise(() => {
-      console.warn(
-        "[revalidateHomepage] BASE_URL or REVALIDATION_SECRET not configured — skipping revalidation"
+      log.warn(
+        "BASE_URL or REVALIDATION_SECRET not configured — skipping revalidation"
       )
     })
 

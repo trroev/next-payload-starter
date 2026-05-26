@@ -16,9 +16,16 @@ runs:
       shell: bash
       run: pnpm coverage
 
-    - name: Upload to Codecov
+    - name: Upload to Codecov (utils)
       uses: codecov/codecov-action@v5
       with:
         directory: ./packages/utils/coverage
         fail_ci_if_error: false
         flags: utils
+
+    - name: Upload to Codecov (logger)
+      uses: codecov/codecov-action@v5
+      with:
+        directory: ./packages/logger/coverage
+        fail_ci_if_error: false
+        flags: logger

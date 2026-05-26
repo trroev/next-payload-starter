@@ -1,5 +1,8 @@
+import { createLogger } from "@repo/logger"
 import type { CollectionAfterChangeHook } from "payload"
 import { match, P } from "ts-pattern"
+
+const log = createLogger({ name: "payload.revalidate-post" })
 
 export const revalidatePost: CollectionAfterChangeHook = async ({ doc }) => {
   await match({
@@ -20,18 +23,18 @@ export const revalidatePost: CollectionAfterChangeHook = async ({ doc }) => {
             body: JSON.stringify({ slug: doc.slug }),
           })
           if (!res.ok) {
-            console.error(
-              `[revalidatePost] Revalidation failed: ${res.status} ${res.statusText}`
-            )
+            log
+              .withMetadata({ status: res.status, statusText: res.statusText })
+              .error("revalidation failed")
           }
         } catch (error) {
-          console.error("[revalidatePost] Revalidation request failed:", error)
+          log.withError(error).error("revalidation request failed")
         }
       }
     )
     .with({ status: "published" }, () => {
-      console.warn(
-        "[revalidatePost] BASE_URL or REVALIDATION_SECRET not configured — skipping revalidation"
+      log.warn(
+        "BASE_URL or REVALIDATION_SECRET not configured — skipping revalidation"
       )
     })
     .otherwise(() => undefined)
