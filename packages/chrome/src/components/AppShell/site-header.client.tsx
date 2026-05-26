@@ -24,9 +24,23 @@ export const SiteHeader = ({
   const isMobileNavOpen = navValue === "mobile"
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 0)
+    let rafId: number | null = null
+    const handleScroll = () => {
+      if (rafId !== null) {
+        return
+      }
+      rafId = window.requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 0)
+        rafId = null
+      })
+    }
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId)
+      }
+    }
   }, [])
 
   return (

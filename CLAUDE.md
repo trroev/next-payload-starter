@@ -75,6 +75,9 @@ Install per-package as needed (`pnpm add ts-pattern --filter <package>`). Use `m
 ### Next.js App Router
 Default exports are required for `page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`, `route.ts`, etc. These files are exempted from the `noDefaultExport` rule. All other files use named exports.
 
+### CSRF / server actions
+Server actions (`signOutAction`, `uploadAvatar`, etc.) rely on Next.js 16's built-in same-origin / `Origin`-header CSRF check — the framework rejects action invocations whose `Origin` does not match the host. Do not add a custom CSRF token layer on top unless a same-origin assumption changes (e.g. exposing actions to a third-party origin, embedding in an iframe on a different domain).
+
 ### Import boundaries
 Layered architecture is enforced by Biome's `noRestrictedImports` in `biome.json`:
 
