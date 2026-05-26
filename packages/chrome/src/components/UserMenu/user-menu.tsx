@@ -1,3 +1,4 @@
+import { transformCloudinaryAvatar } from "@repo/chrome/utils/transformCloudinary"
 import type { SignedInAuth } from "@repo/types/HeaderAuth"
 import { Avatar } from "@repo/ui/components/Avatar"
 import { Menu } from "@repo/ui/components/Menu"
@@ -13,7 +14,13 @@ export const UserMenu = ({ auth }: UserMenuProps) => (
       aria-label={`Account menu for ${auth.displayName}`}
       className="rounded-full"
     >
-      <Avatar alt="" initials={auth.initials} size="sm" src={auth.avatarUrl} />
+      <Avatar
+        alt=""
+        initials={auth.initials}
+        size="sm"
+        src={auth.avatarUrl}
+        transformSrc={transformCloudinaryAvatar}
+      />
     </Menu.Trigger>
     <Menu.Content align="end" sideOffset={8}>
       <Menu.LinkItem closeOnClick render={<Link href="/profile" />}>

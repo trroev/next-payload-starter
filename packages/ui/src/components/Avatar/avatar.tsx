@@ -9,21 +9,12 @@ import {
   avatar,
 } from "./avatar.variants"
 
-const CLOUDINARY_UPLOAD_RE = /\/image\/upload\//
-
-const buildCloudinarySrc = (url: string, px: number): string =>
-  CLOUDINARY_UPLOAD_RE.test(url)
-    ? url.replace(
-        CLOUDINARY_UPLOAD_RE,
-        `/image/upload/c_thumb,g_face,w_${px},h_${px},f_auto,q_auto/`
-      )
-    : url
-
 export type AvatarProps = React.ComponentProps<typeof BaseAvatar.Root> &
   AvatarVariants & {
     src?: string | null
     alt?: string
     initials: string
+    transformSrc?: (url: string, px: number) => string
   }
 
 export const Avatar = ({
@@ -33,12 +24,19 @@ export const Avatar = ({
   src,
   alt = "",
   initials,
+  transformSrc,
   ...props
 }: AvatarProps) => {
   const resolvedSize: AvatarSize = size ?? "md"
   const px = AVATAR_PX[resolvedSize]
-  const src1x = src ? buildCloudinarySrc(src, px) : null
-  const src2x = src ? buildCloudinarySrc(src, px * 2) : null
+  const applyTransform = (px: number): string | null => {
+    if (!src) {
+      return null
+    }
+    return transformSrc ? transformSrc(src, px) : src
+  }
+  const src1x = applyTransform(px)
+  const src2x = applyTransform(px * 2)
 
   return (
     <BaseAvatar.Root

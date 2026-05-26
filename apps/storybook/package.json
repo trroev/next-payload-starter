@@ -9,10 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@remixicon/react": "^4.9.0",
+    "@repo/chrome": "workspace:*",
     "@repo/storybook-config": "workspace:*",
     "@repo/tailwind": "workspace:*",
     "@repo/ui": "workspace:*",
-    "@remixicon/react": "^4.9.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "storybook": "^10.3.6"

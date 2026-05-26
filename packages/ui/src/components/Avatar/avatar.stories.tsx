@@ -2,7 +2,7 @@ import { preview } from "@repo/storybook-config/preview"
 
 import { Avatar as Component } from "./avatar"
 
-const SAMPLE_SRC = "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+const SAMPLE_SRC = "https://picsum.photos/seed/avatar/200"
 
 const meta = preview.meta({
   args: { initials: "MK", src: SAMPLE_SRC, alt: "Marie Kondo" },
@@ -19,6 +19,14 @@ export const Default = meta.story({})
 
 export const Fallback = meta.story({
   args: { src: null, initials: "JD", alt: "Jane Doe" },
+})
+
+export const NoTransform = meta.story({
+  args: {
+    src: SAMPLE_SRC,
+    initials: "RT",
+    alt: "Raw URL — no transformSrc passed",
+  },
 })
 
 export const Showcase = meta.story({

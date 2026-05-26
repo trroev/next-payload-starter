@@ -47,6 +47,16 @@ const resolveHeight = ({
   return null
 }
 
+export const transformCloudinaryAvatar = (url: string, px: number): string => {
+  if (!CLOUDINARY_UPLOAD_RE.test(url)) {
+    return url
+  }
+  return url.replace(
+    CLOUDINARY_UPLOAD_RE,
+    `/image/upload/c_thumb,g_face,w_${px},h_${px},f_auto,q_auto/`
+  )
+}
+
 export const transformCloudinary = ({
   url,
   width,
