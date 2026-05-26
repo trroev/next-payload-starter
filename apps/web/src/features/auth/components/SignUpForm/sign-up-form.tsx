@@ -28,17 +28,6 @@ const signUpSchema = z
 const isSafeCallbackUrl = (value: string | null): value is string =>
   value?.startsWith("/") === true && !value.startsWith("//")
 
-const friendlySignUpError = (code?: string, message?: string): string =>
-  match(code)
-    .with(
-      "USER_ALREADY_EXISTS",
-      "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
-      () => "An account with that email already exists."
-    )
-    .with("PASSWORD_TOO_SHORT", () => "Password must be at least 8 characters.")
-    .with("INVALID_EMAIL", () => "Enter a valid email address.")
-    .otherwise(() => message ?? "Sign up failed. Please try again.")
-
 export const SignUpForm = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -51,17 +40,20 @@ export const SignUpForm = () => {
     validators: { onChange: signUpSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)
-      const { error } = await authClient.signUp.email({
+      const result = await authClient.signUp.email({
         name: value.name,
         email: value.email,
         password: value.password,
       })
-      if (error) {
-        setServerError(friendlySignUpError(error.code, error.message))
-        return
-      }
-      router.push(callbackUrl)
-      router.refresh()
+      match(result)
+        .with({ status: "error" }, ({ friendlyMessage }) => {
+          setServerError(friendlyMessage)
+        })
+        .with({ status: "ok" }, () => {
+          router.push(callbackUrl)
+          router.refresh()
+        })
+        .exhaustive()
     },
   })
 

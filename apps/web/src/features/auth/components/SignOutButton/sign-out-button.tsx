@@ -1,24 +1,21 @@
 "use client"
 
-import { authClient } from "@repo/auth/client"
 import { Button } from "@repo/ui/components/Button"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useTransition } from "react"
+import { signOutAction } from "~/features/auth/actions/sign-out"
 
 export const SignOutButton = () => {
-  const router = useRouter()
-  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
-  const handleSignOut = async () => {
-    setIsSigningOut(true)
-    await authClient.signOut()
-    router.push("/")
-    router.refresh()
+  const handleSignOut = (): void => {
+    startTransition(async () => {
+      await signOutAction()
+    })
   }
 
   return (
-    <Button disabled={isSigningOut} onClick={handleSignOut} variant="secondary">
-      {isSigningOut ? "Signing out…" : "Sign out"}
+    <Button disabled={isPending} onClick={handleSignOut} variant="secondary">
+      {isPending ? "Signing out…" : "Sign out"}
     </Button>
   )
 }

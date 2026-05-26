@@ -18,20 +18,6 @@ const signInSchema = z.object({
 const isSafeCallbackUrl = (value: string | null): value is string =>
   value?.startsWith("/") === true && !value.startsWith("//")
 
-const friendlySignInError = (code?: string, message?: string): string =>
-  match(code)
-    .with(
-      "INVALID_EMAIL_OR_PASSWORD",
-      "INVALID_PASSWORD",
-      () => "The email or password you entered is incorrect."
-    )
-    .with("USER_NOT_FOUND", () => "No account found for that email.")
-    .with(
-      "EMAIL_NOT_VERIFIED",
-      () => "Please verify your email before signing in."
-    )
-    .otherwise(() => message ?? "Sign in failed. Please try again.")
-
 export const SignInForm = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -44,13 +30,16 @@ export const SignInForm = () => {
     validators: { onChange: signInSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)
-      const { error } = await authClient.signIn.email(value)
-      if (error) {
-        setServerError(friendlySignInError(error.code, error.message))
-        return
-      }
-      router.push(callbackUrl)
-      router.refresh()
+      const result = await authClient.signIn.email(value)
+      match(result)
+        .with({ status: "error" }, ({ friendlyMessage }) => {
+          setServerError(friendlyMessage)
+        })
+        .with({ status: "ok" }, () => {
+          router.push(callbackUrl)
+          router.refresh()
+        })
+        .exhaustive()
     },
   })
 

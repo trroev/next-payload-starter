@@ -57,7 +57,7 @@ afterEach(() => {
 
 describe("SignInForm", () => {
   it("submits valid credentials and redirects to the default callback", async () => {
-    signInEmail.mockResolvedValueOnce({ data: {}, error: null })
+    signInEmail.mockResolvedValueOnce({ status: "ok", data: {} })
     const user = userEvent.setup()
 
     renderWithProviders(<SignInForm />)

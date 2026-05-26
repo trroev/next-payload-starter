@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@repo/env": "workspace:*",
+    "@sentry/nextjs": "^10.53.1",
     "better-auth": "^1.2.8",
-    "mongodb": "^6.16.0"
+    "mongodb": "^6.16.0",
+    "ts-pattern": "^5.9.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
