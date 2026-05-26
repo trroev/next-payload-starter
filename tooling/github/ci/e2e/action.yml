@@ -1,0 +1,28 @@
+name: 'E2E'
+description: 'Run Playwright end-to-end suite against a built Next.js server'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup
+      uses: ./tooling/github/setup
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install Playwright browsers
+      shell: bash
+      run: pnpm --filter @repo/e2e exec playwright install --with-deps chromium
+
+    - name: Generate Payload types
+      shell: bash
+      env:
+        SKIP_ENV_VALIDATION: '1'
+      run: pnpm --filter web run generate:types
+
+    - name: E2E
+      shell: bash
+      run: pnpm --filter @repo/e2e run e2e

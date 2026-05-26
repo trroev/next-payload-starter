@@ -57,3 +57,26 @@ jobs:
       - name: Coverage
         if: env.ACT != 'true'
         uses: ./tooling/github/ci/coverage
+
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    env:
+      MONGODB_URI: mongodb://localhost:27017/e2e
+      BETTER_AUTH_SECRET: e2e-better-auth-secret-min-32-chars-long
+      BETTER_AUTH_URL: http://localhost:3000
+      BASE_URL: http://localhost:3000
+      PAYLOAD_SECRET: e2e-payload-secret-min-32-characters-long
+      CLOUDINARY_CLOUD_NAME: e2e-cloud
+      CLOUDINARY_API_KEY: e2e-key
+      CLOUDINARY_API_SECRET: e2e-secret
+    steps:
+      - uses: actions/checkout@v6
+      - name: E2E
+        if: env.ACT != 'true'
+        uses: ./tooling/github/ci/e2e
