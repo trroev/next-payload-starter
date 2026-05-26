@@ -211,7 +211,7 @@
       }
     },
     {
-      "includes": ["apps/web/src/features/recipes/**"],
+      "includes": ["apps/web/src/features/auth/**"],
       "linter": {
         "rules": {
           "style": {
@@ -221,12 +221,10 @@
                 "patterns": [
                   {
                     "group": [
-                      "~/features/auth",
-                      "~/features/auth/**",
+                      "~/features/posts",
+                      "~/features/posts/**",
                       "~/features/profile",
                       "~/features/profile/**",
-                      "~/features/home",
-                      "~/features/home/**",
                       "~/app",
                       "~/app/**"
                     ],
@@ -240,7 +238,7 @@
       }
     },
     {
-      "includes": ["apps/web/src/features/auth/**"],
+      "includes": ["apps/web/src/features/posts/**"],
       "linter": {
         "rules": {
           "style": {
@@ -250,12 +248,10 @@
                 "patterns": [
                   {
                     "group": [
-                      "~/features/recipes",
-                      "~/features/recipes/**",
+                      "~/features/auth",
+                      "~/features/auth/**",
                       "~/features/profile",
                       "~/features/profile/**",
-                      "~/features/home",
-                      "~/features/home/**",
                       "~/app",
                       "~/app/**"
                     ],
@@ -279,41 +275,10 @@
                 "patterns": [
                   {
                     "group": [
-                      "~/features/recipes",
-                      "~/features/recipes/**",
                       "~/features/auth",
                       "~/features/auth/**",
-                      "~/features/home",
-                      "~/features/home/**",
-                      "~/app",
-                      "~/app/**"
-                    ],
-                    "message": "Features must not import from other features or from ~/app. Hoist shared code into ~/lib or ~/components."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/web/src/features/home/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": [
-                      "~/features/recipes",
-                      "~/features/recipes/**",
-                      "~/features/auth",
-                      "~/features/auth/**",
-                      "~/features/profile",
-                      "~/features/profile/**",
+                      "~/features/posts",
+                      "~/features/posts/**",
                       "~/app",
                       "~/app/**"
                     ],

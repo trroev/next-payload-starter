@@ -2,32 +2,44 @@ import { env } from "@repo/env/app"
 import { revalidatePath, revalidateTag } from "next/cache"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
-import { match, P } from "ts-pattern"
+import { match } from "ts-pattern"
+import { z } from "zod"
+
+const REVALIDATION_TAGS = ["homepage"] as const satisfies ReadonlyArray<string>
+
+const revalidateBodySchema = z.union([
+  z.object({ tag: z.enum(REVALIDATION_TAGS) }),
+  z.object({ slug: z.string().min(1) }),
+])
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const auth = request.headers.get("authorization")
-  const body: unknown = await request.json().catch(() => null)
+  if (
+    request.headers.get("authorization") !== `Bearer ${env.REVALIDATION_SECRET}`
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
-  return match({ auth, body })
-    .when(
-      ({ auth }) => auth !== `Bearer ${env.REVALIDATION_SECRET}`,
-      () => NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const rawBody: unknown = await request.json().catch(() => null)
+  const parsed = revalidateBodySchema.safeParse(rawBody)
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body", issues: parsed.error.issues },
+      { status: 400 }
     )
-    .with({ body: { tag: P.string } }, ({ body: { tag } }) => {
+  }
+
+  return match(parsed.data)
+    .with({ tag: "homepage" }, ({ tag }) => {
       revalidateTag(tag, "default")
-      if (tag === "homepage") {
-        revalidatePath("/")
-      }
+      revalidatePath("/")
       return NextResponse.json({ revalidated: true, tag })
     })
-    .with({ body: { slug: P.string } }, ({ body: { slug } }) => {
+    .otherwise(({ slug }) => {
       revalidatePath("/")
       revalidatePath("/posts")
       revalidatePath(`/posts/${slug}`)
       revalidateTag(`post:${slug}`, "default")
       return NextResponse.json({ revalidated: true, slug })
     })
-    .otherwise(() =>
-      NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
-    )
 }
