@@ -85,42 +85,12 @@
       "includes": [
         "packages/ui/**",
         "packages/chrome/**",
+        "packages/utils/**",
+        "packages/types/**",
         "packages/payload/src/components/**",
         "apps/web/src/components/**",
         "apps/web/src/features/*/components/**"
       ],
-      "linter": {
-        "rules": {
-          "style": {
-            "useFilenamingConvention": {
-              "level": "error",
-              "options": {
-                "requireAscii": true,
-                "filenameCases": ["kebab-case"]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["packages/utils/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "useFilenamingConvention": {
-              "level": "error",
-              "options": {
-                "requireAscii": true,
-                "filenameCases": ["kebab-case"]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["packages/types/**"],
       "linter": {
         "rules": {
           "style": {
