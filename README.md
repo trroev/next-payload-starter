@@ -82,6 +82,7 @@ next-payload-starter/
 │   ├── auth/               # better-auth configuration
 │   ├── chrome/             # App shell (header, nav, user menu)
 │   ├── env/                # Shared env loading + zod schema
+│   ├── logger/             # Isomorphic structured logger (LogLayer + pino)
 │   ├── payload/            # Payload collections, hooks, adapters
 │   ├── storybook-config/   # Shared Storybook config
 │   ├── tailwind/           # Tailwind v4 preset + design tokens
@@ -99,7 +100,7 @@ next-payload-starter/
 
 Layered dependencies are enforced by Biome's `noRestrictedImports` rule in `biome.json`:
 
-- `packages/{utils,types,env}` may not import from `packages/{ui,chrome,payload,auth}`
+- `packages/{utils,types,env,logger}` may not import from `packages/{ui,chrome,payload,auth}`
 - `packages/ui` may not import from `packages/{chrome,payload}` or any app
 - `packages/chrome` may not import from any app
 - `apps/web/src/features/<a>` may not import from `apps/web/src/features/<b>` or from `~/app/**`
@@ -136,6 +137,23 @@ Post pages are statically rendered and revalidated on demand. The Payload `Posts
 - **Effect (slug):** revalidates `/`, `/posts`, `/posts/<slug>`, and the `post:<slug>` tag
 
 Revalidation failures are logged but don't fail the Payload save — the page just stays on its old static copy until the next time-based or manual revalidate.
+
+---
+
+## Logging
+
+`@repo/logger` is the shared logging primitive — `console.*` is banned by Biome's `noConsole` rule. Built on [LogLayer](https://loglayer.dev) with pino on Node (JSON in production, pino-pretty in dev) and `ConsoleTransport` on edge/browser, selected via package.json `exports` conditions.
+
+```ts
+import { createLogger, logger } from "@repo/logger"
+
+const log = createLogger({ name: "payload.revalidate-post" })
+
+log.withMetadata({ status: 502 }).error("revalidation failed")
+log.withContext({ requestId }).info("handled")  // returns a fresh child
+```
+
+`withContext` returns a new child logger so per-request context can't leak onto the long-lived root. Sensitive keys (`password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret`) are redacted by default; pass `createLogger({ redact: ["apiKey"] })` to extend the list. Level is controlled by `LOG_LEVEL` (`trace` | `debug` | `info` | `warn` | `error` | `fatal`) — defaults to `info` in production, `debug` otherwise.
 
 ---
 

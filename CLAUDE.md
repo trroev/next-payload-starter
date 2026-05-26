@@ -53,6 +53,22 @@ Conventions that require discipline (not auto-enforced): readonly preference, bo
 
 **Filename casing is enforced by Biome's `useFilenamingConvention` rule** (per-package overrides in `biome.json`, all set to `kebab-case`). Directory casing (PascalCase for components/types, camelCase for utils) is documented above but not auto-enforced — Biome only checks filenames.
 
+### Logging
+`@repo/logger` is the only sanctioned logging primitive — `console.*` is banned by Biome's `noConsole` rule. Import the shared singleton or create a named sub-logger:
+
+```ts
+import { createLogger, logger } from "@repo/logger"
+
+// Per-module sub-logger — the name becomes a structured `name` field.
+const log = createLogger({ name: "payload.revalidate-post" })
+
+log.withMetadata({ status: 502 }).error("revalidation failed")
+log.withError(err).error("request failed")
+log.withContext({ requestId }).info("handled")   // returns a fresh child
+```
+
+Built on [LogLayer](https://loglayer.dev) with pino on Node (JSON in prod, pino-pretty in dev) and `ConsoleTransport` on edge/browser, selected via package.json `exports` conditions. `withContext` returns a new child logger — context never leaks onto the long-lived root. Default redact paths cover `password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret` (top level and one nested level); pass `createLogger({ redact: ["apiKey"] })` to add more. Level comes from `LOG_LEVEL` in `@repo/env/logger` (defaults: `info` in prod, `debug` in dev).
+
 ### ts-pattern
 Install per-package as needed (`pnpm add ts-pattern --filter <package>`). Use `match(...).exhaustive()` wherever possible to get compile-time exhaustiveness checking.
 
@@ -62,7 +78,7 @@ Default exports are required for `page.tsx`, `layout.tsx`, `error.tsx`, `loading
 ### Import boundaries
 Layered architecture is enforced by Biome's `noRestrictedImports` in `biome.json`:
 
-- `packages/{utils,types,env}` → may not import from `packages/{ui,chrome,payload,auth}`
+- `packages/{utils,types,env,logger}` → may not import from `packages/{ui,chrome,payload,auth}`
 - `packages/ui` → may not import from `packages/{chrome,payload}` or any app
 - `packages/chrome` → may not import from any app
 - `apps/web/src/features/<a>` → may not import from `apps/web/src/features/<b>` (no cross-feature imports) or from `~/app/**`
