@@ -2,6 +2,15 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Make `pnpm add` write a catalog reference for deps the catalog already owns,
+# rather than a literal version — so drift is hard to introduce in the first
+# place. This only governs the `pnpm add` flow; it does NOT fail `pnpm install`
+# on a literal version that lands in a committed package.json by other means
+# (hand-edit, copy-paste, merge). That CI gate is `pnpm catalog:check`
+# (scripts/check-catalog.mjs). `prefer` over `strict`: strict forces *every*
+# dep into the catalog at add-time, broader than the convention we enforce.
+catalogMode: prefer
+
 catalog:
   next: 16.2.4
   react: ^19.2.0
