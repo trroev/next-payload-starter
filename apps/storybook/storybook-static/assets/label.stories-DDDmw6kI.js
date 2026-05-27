@@ -1,6 +1,0 @@
-import{n as e}from"./chunk-BEldbCjX.js";import{f as t,n,t as r}from"./iframe-BXALJlt9.js";import{n as i,t as a}from"./label-DZQ6NSqE.js";import{t as o}from"./input-BJVSfmAQ.js";import{t as s}from"./Input-CWFpbfIA.js";var c,l,u,d,f;e((()=>{c=t(),r(),s(),i(),l=n.meta({args:{children:`Label`},component:a,parameters:{layout:`centered`},title:`Atoms/Label`}),u=l.story({}),d=l.story({render:()=>(0,c.jsxs)(`div`,{className:`flex w-80 flex-col gap-2`,children:[(0,c.jsx)(a,{htmlFor:`email`,children:`Email`}),(0,c.jsx)(o,{id:`email`,placeholder:`you@example.com`})]})}),u.input.parameters={...u.input.parameters,docs:{...u.input.parameters?.docs,source:{originalSource:`meta.story({})`,...u.input.parameters?.docs?.source}}},d.input.parameters={...d.input.parameters,docs:{...d.input.parameters?.docs,source:{originalSource:`meta.story({
-  render: () => <div className="flex w-80 flex-col gap-2">
-      <Component htmlFor="email">Email</Component>
-      <Input id="email" placeholder="you@example.com" />
-    </div>
-})`,...d.input.parameters?.docs?.source}}},f=[`Default`,`Showcase`]}))();export{u as Default,d as Showcase,f as __namedExportsOrder};
