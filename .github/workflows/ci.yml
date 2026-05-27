@@ -36,6 +36,8 @@ jobs:
     name: Typecheck
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - name: Typecheck
         if: env.ACT != 'true'
         uses: ./tooling/github/ci/typecheck
@@ -45,6 +47,8 @@ jobs:
     name: Test
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - name: Test
         if: env.ACT != 'true'
         uses: ./tooling/github/ci/test
@@ -54,6 +58,8 @@ jobs:
     name: Coverage
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - name: Coverage
         if: env.ACT != 'true'
         uses: ./tooling/github/ci/coverage

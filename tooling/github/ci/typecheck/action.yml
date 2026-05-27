@@ -14,6 +14,6 @@ runs:
 
     - name: Typecheck
       shell: bash
-      run: pnpm typecheck
+      run: pnpm typecheck --affected
       env:
         SKIP_ENV_VALIDATION: 'true'

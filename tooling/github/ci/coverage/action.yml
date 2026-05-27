@@ -14,7 +14,7 @@ runs:
 
     - name: Coverage
       shell: bash
-      run: pnpm coverage
+      run: pnpm coverage --affected
 
     - name: Upload to Codecov (utils)
       uses: codecov/codecov-action@v5
