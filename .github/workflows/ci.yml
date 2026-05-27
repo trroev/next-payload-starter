@@ -8,6 +8,10 @@ on:
 
 env:
   ACT: "${{ false }}"
+  # Vercel Remote Cache — turbo reads these from the environment automatically.
+  # Workflow-level env flows into composite actions (the secrets context does not).
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
 permissions:
   contents: read
