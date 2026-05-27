@@ -12,7 +12,8 @@
     "generate:types": "pnpm with-env payload generate:types",
     "generate:importmap": "pnpm with-env payload generate:importmap",
     "test": "vitest run",
-    "postinstall": "if [ -z \"$CI\" ] && [ -f .env.keys ]; then pnpm generate:types && pnpm generate:importmap; fi"
+    "postinstall": "if [ -z \"$CI\" ] && [ -f .env.keys ]; then pnpm generate:types && pnpm generate:importmap; fi",
+    "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
   },
   "dependencies": {
     "@repo/auth": "workspace:*",

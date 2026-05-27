@@ -17,7 +17,8 @@
   "scripts": {
     "coverage": "vitest run --coverage",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
   },
   "dependencies": {
     "@loglayer/plugin-redaction": "^3.1.0",

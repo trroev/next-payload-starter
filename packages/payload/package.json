@@ -18,7 +18,8 @@
     "./payload-types": "./src/types/payload-types.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "^3.84.1",

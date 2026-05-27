@@ -5,6 +5,8 @@
   "scripts": {
     "boundaries": "turbo boundaries",
     "build": "dotenvx run --convention=nextjs -- turbo run build",
+    "clean": "turbo run clean",
+    "clean:workspaces": "turbo run clean && bash scripts/clean-workspaces.sh",
     "coverage": "turbo run coverage",
     "dev": "dotenvx run --convention=nextjs -- turbo run dev",
     "e2e": "dotenvx run --convention=nextjs -- pnpm --filter @repo/e2e run e2e",
