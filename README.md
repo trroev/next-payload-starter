@@ -191,4 +191,4 @@ The app deploys as a single Vercel project. Payload's embedded architecture mean
 turbo run build --filter=web
 ```
 
-See `apps/web/vercel.json` for the build command Vercel uses.
+See `apps/web/vercel.json` for the build command Vercel uses. That file also sets `ignoreCommand` to `npx turbo-ignore web`, so Vercel skips the build whenever a push doesn't touch `web` or anything in its dependency graph — no dashboard configuration required. `turbo-ignore` is pinned as a root devDependency for deterministic builds.
