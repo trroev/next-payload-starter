@@ -5,6 +5,7 @@
     "BASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
+    "CI",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
     "CLOUDINARY_CLOUD_NAME",
@@ -22,6 +23,7 @@
     "SENTRY_PROJECT",
     "VERCEL_URL"
   ],
+  "globalPassThroughEnv": ["SKIP_ENV_VALIDATION"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
