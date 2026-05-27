@@ -10,8 +10,8 @@ This is a Turborepo monorepo starter for content-driven web apps. It bundles the
 
 ## Tooling
 
-- **Formatter/Linter:** Biome (extends `ultracite/biome/core|react|next`). Run `pnpm lint` and `pnpm format` from root.
-- **Type checking:** `pnpm typecheck` from root.
+- **Formatter/Linter:** Biome (extends `ultracite/biome/core|react|next`). Run `pnpm lint` and `pnpm format` from root. Lint is a single-pass root Biome invocation — intentionally *not* a turbo task, so no package defines a `lint` script and there is no `lint` entry in `turbo.json`.
+- **Type checking:** `pnpm typecheck` from root. In `turbo.json`, `typecheck` depends on a `transit` node (`{ "dependsOn": ["^transit"] }`) rather than `^typecheck`: `tsc --noEmit` on a JIT consumer reads dependency *source*, not built output, so typechecks run in parallel while dependency-source changes still bust the cache.
 - **Tests:** Vitest via `pnpm test`. Shared config in `packages/testing`.
 - **Coverage:** `pnpm coverage` from root runs `turbo run coverage` across all packages that define the script. CI runs the same command and uploads each package's `lcov.info` to Codecov. The gate that fails CI lives in `codecov.yml` at the repo root — currently `patch: 80%` (lines changed in a PR must be ≥80% covered) and `project: auto` (total coverage may not drop by more than 1%). Adjust those rules in `codecov.yml`, not in `vitest.config.ts`. New packages opt in by adding a `coverage` script + a `coverage` block to their vitest config, then a new `flags`/upload step in `tooling/github/ci/coverage/action.yml`.
 - **Package manager:** pnpm. Always use `pnpm add`, never `npm install`.
