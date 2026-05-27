@@ -87,3 +87,5 @@ Layered architecture is enforced by Biome's `noRestrictedImports` in `biome.json
 - `apps/web/src/features/<a>` → may not import from `apps/web/src/features/<b>` (no cross-feature imports) or from `~/app/**`
 
 **Every new feature requires adding its zone to `biome.json`** — copy an existing `apps/web/src/features/<name>/**` override and list the other features in the `group` patterns.
+
+`pnpm boundaries` (Turborepo's experimental `turbo boundaries`, run in the CI lint job) is a complement, not a replacement: it catches imports of packages **not declared** in a package's `package.json` dependencies — the one gap Biome's directional rules don't cover. We deliberately **do not** use its tag-based isolation rules: those would duplicate the Biome layering above, and the tagging feature is still experimental. Revisit tags only if `turbo boundaries` graduates from experimental and we want a single source of truth for layering.

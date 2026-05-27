@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "boundaries": "turbo boundaries",
     "build": "dotenvx run --convention=nextjs -- turbo run build",
     "coverage": "turbo run coverage",
     "dev": "dotenvx run --convention=nextjs -- turbo run dev",

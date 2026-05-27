@@ -15,3 +15,7 @@ runs:
     - name: Lint
       shell: bash
       run: pnpm lint
+
+    - name: Boundaries
+      shell: bash
+      run: pnpm boundaries
