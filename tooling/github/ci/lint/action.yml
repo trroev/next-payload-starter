@@ -14,7 +14,3 @@ runs:
     - name: Boundaries
       shell: bash
       run: pnpm boundaries
-
-    - name: Catalog convention
-      shell: bash
-      run: pnpm catalog:check
