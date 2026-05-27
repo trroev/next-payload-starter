@@ -168,6 +168,19 @@ log.withContext({ requestId }).info("handled")  // returns a fresh child
 
 `SKIP_ENV_VALIDATION=true` is set for the entire job so steps that touch the Payload config don't require real credentials.
 
+### Remote caching (optional)
+
+CI and local builds can share a Turborepo cache via [Vercel Remote Cache](https://turborepo.com/docs/core-concepts/remote-caching). It's **off by default** — the template ships without a Vercel project, so `ci.yml` reads `TURBO_TOKEN` / `TURBO_TEAM` that don't exist yet and turbo simply logs `Remote caching disabled` and falls back to local caching. CI still passes.
+
+To enable it in your fork:
+
+1. Get your Vercel **team slug** (Vercel → Settings → General) — this is `TURBO_TEAM`. A team is enough; you don't need a deployed project.
+2. Create a token: `npx turbo login && npx turbo link`, or Vercel → Account Settings → Tokens.
+3. In GitHub → Settings → Secrets and variables → Actions, add:
+   - Secret `TURBO_TOKEN` = the token
+   - Variable `TURBO_TEAM` = the team slug
+4. Push, let CI run once to seed the cache, then push again — the lint/type-check/test/coverage jobs should show remote cache hits.
+
 ---
 
 ## Deployment
