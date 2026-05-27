@@ -21,12 +21,6 @@ const { uploadAvatar, removeAvatar, nav } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock("@repo/auth/client", () => ({
-  authClient: {
-    useSession: () => ({ data: null, isPending: true }),
-  },
-}))
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: nav.push,
@@ -92,10 +86,7 @@ describe("AvatarManager", () => {
 
     const dialog = await openDialog(user)
 
-    const fileInput = dialog
-      .getByText("Click to choose an image")
-      .closest("label")
-      ?.parentElement?.querySelector('input[type="file"]') as HTMLInputElement
+    const fileInput = dialog.getByLabelText("Click to choose an image")
     const file = makeFile("a.jpg", "image/jpeg", 1024)
     await user.upload(fileInput, file)
 
@@ -119,10 +110,7 @@ describe("AvatarManager", () => {
 
     const dialog = await openDialog(user)
 
-    const fileInput = dialog
-      .getByText("Click to choose an image")
-      .closest("label")
-      ?.parentElement?.querySelector('input[type="file"]') as HTMLInputElement
+    const fileInput = dialog.getByLabelText("Click to choose an image")
     const oversize = makeFile("big.jpg", "image/jpeg", 6 * 1024 * 1024)
     await user.upload(fileInput, oversize)
 

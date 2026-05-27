@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest"
 
 import { buildUser } from "@repo/testing/factories"
 import type { SessionPayload } from "@repo/testing/msw"
-import { authErrorHandler, authSignInHandler, server } from "@repo/testing/msw"
+import { authErrorHandler, authSignUpHandler, server } from "@repo/testing/msw"
 import { renderWithProviders, userEvent } from "@repo/testing/render"
 import { cleanup, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -17,7 +17,7 @@ const { nav } = vi.hoisted(() => ({
     forward: vi.fn(),
     refresh: vi.fn(),
     prefetch: vi.fn(),
-    pathname: "/sign-in",
+    pathname: "/sign-up",
     searchParams: new URLSearchParams(),
   },
 }))
@@ -38,7 +38,7 @@ vi.mock("next/navigation", () => ({
   notFound: vi.fn(),
 }))
 
-const { SignInForm } = await import("./sign-in-form")
+const { SignUpForm } = await import("./sign-up-form")
 
 const buildSessionPayload = (): SessionPayload => {
   const user = buildUser()
@@ -52,6 +52,13 @@ const buildSessionPayload = (): SessionPayload => {
   }
 }
 
+const fillForm = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.type(screen.getByLabelText("Name"), "Chef Example")
+  await user.type(screen.getByLabelText("Email"), "chef@example.com")
+  await user.type(screen.getByLabelText("Password"), "hunter22")
+  await user.type(screen.getByLabelText("Confirm password"), "hunter22")
+}
+
 beforeEach(() => {
   nav.push.mockReset()
   nav.refresh.mockReset()
@@ -61,16 +68,15 @@ afterEach(() => {
   cleanup()
 })
 
-describe("SignInForm", () => {
-  it("submits valid credentials and redirects to the default callback", async () => {
-    server.use(authSignInHandler(buildSessionPayload()))
+describe("SignUpForm", () => {
+  it("creates an account and redirects to the default callback", async () => {
+    server.use(authSignUpHandler(buildSessionPayload()))
     const user = userEvent.setup()
 
-    renderWithProviders(<SignInForm />)
+    renderWithProviders(<SignUpForm />)
 
-    await user.type(screen.getByLabelText("Email"), "chef@example.com")
-    await user.type(screen.getByLabelText("Password"), "hunter22")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
+    await fillForm(user)
+    await user.click(screen.getByRole("button", { name: "Create account" }))
 
     await waitFor(() => {
       expect(nav.push).toHaveBeenCalledWith("/")
@@ -78,37 +84,22 @@ describe("SignInForm", () => {
     expect(nav.refresh).toHaveBeenCalled()
   })
 
-  it("shows the friendly message when the server rejects the credentials", async () => {
+  it("shows the friendly message when the email is already registered", async () => {
     server.use(
-      authErrorHandler("sign-in/email", 401, {
-        code: "INVALID_EMAIL_OR_PASSWORD",
-        message: "Invalid email or password",
+      authErrorHandler("sign-up/email", 422, {
+        code: "USER_ALREADY_EXISTS",
+        message: "User already exists",
       })
     )
     const user = userEvent.setup()
 
-    renderWithProviders(<SignInForm />)
+    renderWithProviders(<SignUpForm />)
 
-    await user.type(screen.getByLabelText("Email"), "chef@example.com")
-    await user.type(screen.getByLabelText("Password"), "wrongpass")
-    await user.click(screen.getByRole("button", { name: "Sign in" }))
-
-    expect(
-      await screen.findByText("The email or password you entered is incorrect.")
-    ).toBeInTheDocument()
-    expect(nav.push).not.toHaveBeenCalled()
-  })
-
-  it("shows the inline email error when the email is invalid", async () => {
-    const user = userEvent.setup()
-    renderWithProviders(<SignInForm />)
-
-    const emailField = screen.getByLabelText("Email")
-    await user.type(emailField, "not-an-email")
-    await user.tab()
+    await fillForm(user)
+    await user.click(screen.getByRole("button", { name: "Create account" }))
 
     expect(
-      await screen.findByText("Enter a valid email address.")
+      await screen.findByText("An account with that email already exists.")
     ).toBeInTheDocument()
     expect(nav.push).not.toHaveBeenCalled()
   })
