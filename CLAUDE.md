@@ -69,6 +69,22 @@ log.withContext({ requestId }).info("handled")   // returns a fresh child
 
 Built on [LogLayer](https://loglayer.dev) with pino on Node (JSON in prod, pino-pretty in dev) and `ConsoleTransport` on edge/browser, selected via package.json `exports` conditions. `withContext` returns a new child logger — context never leaks onto the long-lived root. Default redact paths cover `password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret` (top level and one nested level); pass `createLogger({ redact: ["apiKey"] })` to add more. Level comes from `LOG_LEVEL` in `@repo/env/logger` (defaults: `info` in prod, `debug` in dev).
 
+### HTTP / fetch
+`@repo/fetch` is the only sanctioned fetch primitive — the global `fetch` is banned by Biome's `noRestrictedGlobals` rule (error level, CI-failing), with `packages/fetch/**` exempted so the wrapper can call through. Import the pre-configured client or build one with the factory:
+
+```ts
+import { fetchClient, createFetchClient } from "@repo/fetch"
+
+// Pre-configured singleton: baseURL from @repo/env/fetch, linear retry (2 attempts),
+// 10s timeout, throw: false ({ data, error } tuple), logger-integrated onError.
+const { data, error } = await fetchClient("/api/widget", { output: widgetSchema })
+
+// Per-caller overrides — returns a fresh, independent client (no shared state).
+const client = createFetchClient({ baseURL: "https://api.example.com", retry: 0 })
+```
+
+Built on [Better Fetch](https://better-fetch.vercel.app/docs) (typed `fetch` wrapper with Standard Schema runtime validation). Pass an `output` Zod schema to validate the response and infer `data`'s type. Clients run with `throw: false`, so callers branch on the returned `{ data, error }` rather than try/catch. Every client logs transport and non-OK failures through a shared `onError` hook via `@repo/logger` (logger name `fetch`) — do **not** re-log fetch failures at the call site. A caller-supplied `onError` runs *after* the shared logging hook. `@repo/fetch` is a low-level shared package (may import `@repo/{logger,env,types,utils}`, never `@repo/{ui,chrome,payload,auth}` or any app).
+
 ### ts-pattern
 Install per-package as needed (`pnpm add ts-pattern --filter <package>`). Use `match(...).exhaustive()` wherever possible to get compile-time exhaustiveness checking.
 
@@ -81,7 +97,7 @@ Server actions (`signOutAction`, `uploadAvatar`, etc.) rely on Next.js 16's buil
 ### Import boundaries
 Layered architecture is enforced by Biome's `noRestrictedImports` in `biome.json`:
 
-- `packages/{utils,types,env,logger}` → may not import from `packages/{ui,chrome,payload,auth}`
+- `packages/{utils,types,env,logger,fetch}` → may not import from `packages/{ui,chrome,payload,auth}`
 - `packages/ui` → may not import from `packages/{chrome,payload}` or any app
 - `packages/chrome` → may not import from any app
 - `apps/web/src/features/<a>` → may not import from `apps/web/src/features/<b>` (no cross-feature imports) or from `~/app/**`

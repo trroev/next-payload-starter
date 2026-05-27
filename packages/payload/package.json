@@ -21,11 +21,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/env": "workspace:*",
-    "@repo/logger": "workspace:*",
     "@payloadcms/db-mongodb": "^3.84.1",
     "@payloadcms/plugin-cloud-storage": "^3.84.1",
     "@payloadcms/plugin-seo": "^3.84.1",
+    "@repo/env": "workspace:*",
+    "@repo/fetch": "workspace:*",
+    "@repo/logger": "workspace:*",
     "cloudinary": "^2.10.0",
     "ts-pattern": "^5.9.0"
   },

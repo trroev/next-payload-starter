@@ -29,3 +29,10 @@ runs:
         directory: ./packages/logger/coverage
         fail_ci_if_error: false
         flags: logger
+
+    - name: Upload to Codecov (fetch)
+      uses: codecov/codecov-action@v5
+      with:
+        directory: ./packages/fetch/coverage
+        fail_ci_if_error: false
+        flags: fetch

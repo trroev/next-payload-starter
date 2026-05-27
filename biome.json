@@ -32,7 +32,15 @@
             "syntax": "generic"
           }
         },
-        "noDefaultExport": "error"
+        "noDefaultExport": "error",
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "fetch": "Use the @repo/fetch client (fetchClient / createFetchClient) instead of the global fetch — it is the only sanctioned fetch primitive (typed, validated, retried, logged)."
+            }
+          }
+        }
       }
     }
   },
@@ -75,6 +83,7 @@
         "packages/logger/src/index.ts",
         "packages/logger/src/logger/index.ts",
         "packages/logger/src/test-transport/index.ts",
+        "packages/fetch/src/index.ts",
         "apps/web/src/features/*/components/*/index.ts",
         "apps/web/src/features/*/hooks/*/index.ts",
         "apps/web/src/components/*/index.ts"
@@ -94,6 +103,7 @@
         "packages/utils/**",
         "packages/types/**",
         "packages/logger/**",
+        "packages/fetch/**",
         "packages/payload/src/components/**",
         "apps/web/src/components/**",
         "apps/web/src/features/*/components/**"
@@ -117,7 +127,8 @@
         "packages/utils/**",
         "packages/types/**",
         "packages/env/**",
-        "packages/logger/**"
+        "packages/logger/**",
+        "packages/fetch/**"
       ],
       "linter": {
         "rules": {
@@ -137,7 +148,7 @@
                       "@repo/auth",
                       "@repo/auth/**"
                     ],
-                    "message": "Foundation packages (utils, types, env, logger) must not import from higher layers (ui, chrome, payload, auth). Move shared code down the stack instead."
+                    "message": "Foundation packages (utils, types, env, logger, fetch) must not import from higher layers (ui, chrome, payload, auth). Move shared code down the stack instead."
                   }
                 ]
               }
@@ -269,6 +280,16 @@
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/fetch/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
           }
         }
       }
