@@ -25,12 +25,12 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest-axe": "^3.5.9",
     "@types/node": "^22.15.3",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^5.2.0",
     "jest-axe": "^10.0.0",
     "jsdom": "^29.1.1",
-    "typescript": "^6.0.3",
+    "typescript": "catalog:",
     "vitest": "^3.2.4"
   },
   "dependencies": {
@@ -38,13 +38,13 @@
     "@repo/utils": "workspace:*",
     "@remixicon/react": "^4.9.0",
     "clsx": "^2.1.1",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "tailwind-merge": "^3.5.0",
     "tailwind-variants": "^3.2.2",
     "ts-pattern": "^5.9.0"
   },
   "peerDependencies": {
-    "next": "^16.0.0"
+    "next": "catalog:peers"
   }
 }

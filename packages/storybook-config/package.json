@@ -13,11 +13,11 @@
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
     "@storybook/nextjs-vite": "^10.3.6",
-    "@types/react": "19.2.2",
-    "typescript": "^6.0.3"
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@repo/tailwind": "workspace:*",
-    "react": "^19.2.0"
+    "react": "catalog:"
   }
 }

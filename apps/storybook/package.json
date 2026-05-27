@@ -15,8 +15,8 @@
     "@repo/storybook-config": "workspace:*",
     "@repo/tailwind": "workspace:*",
     "@repo/ui": "workspace:*",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "storybook": "^10.3.6"
   },
   "devDependencies": {
@@ -26,11 +26,11 @@
     "@storybook/nextjs-vite": "^10.3.6",
     "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^22.15.3",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
-    "next": "16.2.4",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "next": "catalog:",
     "tailwindcss": "^4.2.4",
-    "typescript": "^6.0.3",
+    "typescript": "catalog:",
     "vite": "^8.0.10"
   }
 }

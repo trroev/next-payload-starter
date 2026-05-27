@@ -23,21 +23,21 @@
     "msw": "^2.7.0"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "catalog:peers",
+    "react-dom": "catalog:peers",
     "vitest": "^3.0.0"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.15.3",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^5.2.0",
     "jsdom": "^29.1.1",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "typescript": "^6.0.3",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
     "vitest": "^3.2.4"
   }
 }
