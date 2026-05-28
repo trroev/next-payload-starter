@@ -2,7 +2,6 @@ import { redactionPlugin } from "@loglayer/plugin-redaction"
 import type { LogLayer, LogLayerTransport } from "loglayer"
 import { LogLayer as LogLayerImpl } from "loglayer"
 import type { LogLevel } from "./log-level"
-import { makeImmutable } from "./make-immutable"
 import { mergeRedactPaths } from "./redact"
 import type { CreateLoggerOptions } from "./types"
 
@@ -20,7 +19,7 @@ export const buildRootLogger = ({
     plugins: [redactionPlugin({ paths: mergeRedactPaths() })],
   })
   root.setLevel(level)
-  return makeImmutable(root)
+  return root
 }
 
 export const buildCreateLogger =
@@ -39,5 +38,5 @@ export const buildCreateLogger =
     if (level) {
       child.setLevel(level)
     }
-    return makeImmutable(child)
+    return child
   }

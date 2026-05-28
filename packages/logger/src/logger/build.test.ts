@@ -1,6 +1,38 @@
+import {
+  BaseTransport,
+  type LogLayerTransportParams,
+} from "@loglayer/transport"
+import type { LogLevelType } from "loglayer"
 import { describe, expect, it } from "vitest"
-import { TestCaptureTransport } from "../test-transport"
 import { buildCreateLogger, buildRootLogger } from "./build"
+
+type CapturedLog = {
+  readonly level: LogLevelType
+  readonly messages: ReadonlyArray<unknown>
+  readonly data?: Record<string, unknown>
+}
+
+class TestCaptureTransport extends BaseTransport<Console> {
+  readonly entries: Array<CapturedLog> = []
+
+  constructor() {
+    super({ id: "test-capture", logger: console })
+  }
+
+  shipToLogger({
+    logLevel,
+    messages,
+    data,
+    hasData,
+  }: LogLayerTransportParams): Array<unknown> {
+    this.entries.push({
+      level: logLevel,
+      messages: [...messages],
+      data: hasData ? (data as Record<string, unknown>) : undefined,
+    })
+    return [...messages]
+  }
+}
 
 const makeRig = (level: Parameters<typeof buildRootLogger>[0]["level"]) => {
   const transport = new TestCaptureTransport()
@@ -99,17 +131,6 @@ describe("buildCreateLogger", () => {
     const [childEntry, rootEntry] = transport.entries
     expect(childEntry?.data?.userId).toBe("u-123")
     expect(rootEntry?.data?.userId).toBeUndefined()
-  })
-
-  it("withContext returns a fresh logger, never mutating its receiver", () => {
-    const { transport, root } = makeRig("info")
-    const scoped = root.withContext({ requestId: "r-1" })
-    scoped.info("scoped")
-    root.info("root")
-
-    const [scopedEntry, rootEntry] = transport.entries
-    expect(scopedEntry?.data?.requestId).toBe("r-1")
-    expect(rootEntry?.data?.requestId).toBeUndefined()
   })
 
   it("merges custom redact paths with the default list", () => {

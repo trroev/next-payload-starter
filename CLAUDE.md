@@ -77,10 +77,13 @@ const log = createLogger({ name: "payload.revalidate-post" })
 
 log.withMetadata({ status: 502 }).error("revalidation failed")
 log.withError(err).error("request failed")
-log.withContext({ requestId }).info("handled")   // returns a fresh child
+
+// Scoped logger: pass context at creation, or branch a child explicitly.
+const requestLog = createLogger({ name: "api.request", context: { requestId } })
+const childLog = log.child().withContext({ requestId })
 ```
 
-Built on [LogLayer](https://loglayer.dev) with pino on Node (JSON in prod, pino-pretty in dev) and `ConsoleTransport` on edge/browser, selected via package.json `exports` conditions. `withContext` returns a new child logger — context never leaks onto the long-lived root. Default redact paths cover `password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret` (top level and one nested level); pass `createLogger({ redact: ["apiKey"] })` to add more. Level comes from `LOG_LEVEL` in `@repo/env/logger` (defaults: `info` in prod, `debug` in dev).
+Built on [LogLayer](https://loglayer.dev) with pino (JSON in prod, pino-pretty in dev) — Node-only by design (see `packages/logger/README.md` for the #27 investigation). `.withContext()` mutates its receiver; use `createLogger({ context })` or `.child()` to get a scoped logger that does not leak back onto the long-lived root. Default redact paths cover `password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret` (top level and one nested level); pass `createLogger({ redact: ["apiKey"] })` to add more. Level comes from `LOG_LEVEL` in `@repo/env/logger` (defaults: `info` in prod, `debug` in dev).
 
 ### HTTP / fetch
 [Better Fetch](https://better-fetch.vercel.app/docs) is the repo's recommended HTTP client — a typed `fetch` wrapper with Standard Schema runtime validation via `output`. Recommended, not enforced: plain `fetch` is acceptable for calls that don't need typed responses. There is no global-`fetch` ban.

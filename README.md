@@ -139,7 +139,7 @@ Revalidation failures are logged but don't fail the Payload save — the page ju
 
 ## Logging
 
-`@repo/logger` is the shared logging primitive — `console.*` is banned by Biome's `noConsole` rule. Built on [LogLayer](https://loglayer.dev) with pino on Node (JSON in production, pino-pretty in dev) and `ConsoleTransport` on edge/browser, selected via package.json `exports` conditions.
+`@repo/logger` is the shared logging primitive — `console.*` is banned by Biome's `noConsole` rule. Built on [LogLayer](https://loglayer.dev) with pino (JSON in production, pino-pretty in dev). Node-only by design; see `packages/logger/README.md` for the #27 investigation outcome.
 
 ```ts
 import { createLogger, logger } from "@repo/logger"
@@ -147,7 +147,10 @@ import { createLogger, logger } from "@repo/logger"
 const log = createLogger({ name: "payload.revalidate-post" })
 
 log.withMetadata({ status: 502 }).error("revalidation failed")
-log.withContext({ requestId }).info("handled")  // returns a fresh child
+
+// Scoped logger: pass context at creation, or branch a child explicitly.
+const requestLog = createLogger({ name: "api.request", context: { requestId } })
+const childLog = log.child().withContext({ requestId })
 ```
 
 `withContext` returns a new child logger so per-request context can't leak onto the long-lived root. Sensitive keys (`password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret`) are redacted by default; pass `createLogger({ redact: ["apiKey"] })` to extend the list. Level is controlled by `LOG_LEVEL` (`trace` | `debug` | `info` | `warn` | `error` | `fatal`) — defaults to `info` in production, `debug` otherwise.

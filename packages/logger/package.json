@@ -5,14 +5,7 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "edge-light": "./src/logger/edge.ts",
-      "workerd": "./src/logger/edge.ts",
-      "browser": "./src/logger/browser.ts",
-      "node": "./src/logger/node.ts",
-      "default": "./src/logger/node.ts"
-    },
-    "./test-transport": "./src/test-transport/index.ts"
+    ".": "./src/logger/node.ts"
   },
   "scripts": {
     "coverage": "vitest run --coverage",
