@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/components/Button"
 import { useTransition } from "react"
-import { signOutAction } from "~/features/auth/actions/sign-out"
+import { signOutAction } from "../../actions/sign-out"
 
 export const SignOutButton = () => {
   const [isPending, startTransition] = useTransition()

@@ -5,10 +5,10 @@ import "server-only"
 import type { ActionResult } from "@repo/types/ActionResult"
 import { match, P } from "ts-pattern"
 import { z } from "zod"
-import { updateUserAvatar } from "~/features/profile/api/update-user-avatar"
 import { getCurrentViewer } from "~/lib/queries/current-viewer"
 import { createMediaAsset, deleteMediaAsset } from "~/lib/queries/media"
 import { serverAction } from "~/lib/server-action"
+import { updateUserAvatar } from "../api/update-user-avatar"
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024
 

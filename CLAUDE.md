@@ -105,8 +105,10 @@ Layered architecture is enforced by Biome's `noRestrictedImports` in `biome.json
 - `packages/{utils,types,env,logger}` → may not import from `packages/{ui,chrome,payload,auth}`
 - `packages/ui` → may not import from `packages/{chrome,payload}` or any app
 - `packages/chrome` → may not import from any app
-- `apps/web/src/features/<a>` → may not import from `apps/web/src/features/<b>` (no cross-feature imports) or from `~/app/**`
+- `apps/web/src/features/**` → may not import via the `~/features/*` alias at all, and may not import from `~/app/**`
 
-**Every new feature requires adding its zone to `biome.json`** — copy an existing `apps/web/src/features/<name>/**` override and list the other features in the `group` patterns.
+**Adding a new feature requires zero `biome.json` edits.** A single override targeting `apps/web/src/features/**` bans the `~/features/*` alias outright. This enforces two invariants in one rule:
+- **No cross-feature imports** — feature B cannot reach into feature A via `~/features/a/...`.
+- **Intra-feature imports use relative paths** (`./`, `../`) only — even your own feature is not reachable via `~/features/<self>/...`. Each feature stays a self-contained module accessed from the outside only through its public barrel.
 
 `pnpm boundaries` (Turborepo's experimental `turbo boundaries`, run in the CI lint job) is a complement, not a replacement: it catches imports of packages **not declared** in a package's `package.json` dependencies — the one gap Biome's directional rules don't cover. We deliberately **do not** use its tag-based isolation rules: those would duplicate the Biome layering above, and the tagging feature is still experimental. Revisit tags only if `turbo boundaries` graduates from experimental and we want a single source of truth for layering.

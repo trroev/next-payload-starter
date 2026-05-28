@@ -193,7 +193,7 @@
       }
     },
     {
-      "includes": ["apps/web/src/features/auth/**"],
+      "includes": ["apps/web/src/features/**"],
       "linter": {
         "rules": {
           "style": {
@@ -203,68 +203,12 @@
                 "patterns": [
                   {
                     "group": [
-                      "~/features/posts",
-                      "~/features/posts/**",
-                      "~/features/profile",
-                      "~/features/profile/**",
+                      "~/features",
+                      "~/features/**",
                       "~/app",
                       "~/app/**"
                     ],
-                    "message": "Features must not import from other features or from ~/app. Hoist shared code into ~/lib or ~/components."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/web/src/features/posts/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": [
-                      "~/features/auth",
-                      "~/features/auth/**",
-                      "~/features/profile",
-                      "~/features/profile/**",
-                      "~/app",
-                      "~/app/**"
-                    ],
-                    "message": "Features must not import from other features or from ~/app. Hoist shared code into ~/lib or ~/components."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/web/src/features/profile/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": [
-                      "~/features/auth",
-                      "~/features/auth/**",
-                      "~/features/posts",
-                      "~/features/posts/**",
-                      "~/app",
-                      "~/app/**"
-                    ],
-                    "message": "Features must not import from other features or from ~/app. Hoist shared code into ~/lib or ~/components."
+                    "message": "Code inside apps/web/src/features/** must not import via the `~/features/*` alias (cross-feature imports are banned, and intra-feature imports must use relative paths) and must not import from `~/app/**`. Hoist shared code into `~/lib` or `~/components`."
                   }
                 ]
               }
