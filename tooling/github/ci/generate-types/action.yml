@@ -10,14 +10,14 @@ runs:
     - name: Generate Payload types
       shell: bash
       # Invoke payload directly (no dotenvx) — CI has no private key.
-      # CLOUDINARY_URL="" prevents cloudinary's module-load check from reading
-      # the encrypted value that payload CLI loads from .env.development.
-      # Remove this once CLOUDINARY_URL is gone from that file.
       run: pnpm --filter web exec payload generate:types
       env:
         SKIP_ENV_VALIDATION: 'true'
-        CLOUDINARY_URL: ''
 
     - name: Check for stale Payload types
       shell: bash
-      run: git diff --exit-code packages/payload/src/types/payload-types.ts
+      run: |
+        if ! git diff --exit-code packages/payload/src/types/payload-types.ts; then
+          echo "::error file=packages/payload/src/types/payload-types.ts::Payload types are stale. Run \`pnpm generate:types\` and commit the result."
+          exit 1
+        fi
