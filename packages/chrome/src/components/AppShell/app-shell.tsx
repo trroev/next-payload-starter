@@ -8,13 +8,20 @@ import { SiteHeader } from "./site-header.client"
 
 export type AppShellProps = {
   auth: HeaderAuth
+  desktopSignOutSlot: React.ReactNode
+  mobileSignOutSlot: React.ReactNode
   children: React.ReactNode
 }
 
-export const AppShell = ({ auth, children }: AppShellProps) => {
+export const AppShell = ({
+  auth,
+  desktopSignOutSlot,
+  mobileSignOutSlot,
+  children,
+}: AppShellProps) => {
   const desktopAuth =
     auth.status === "signed-in" ? (
-      <UserMenu auth={auth} />
+      <UserMenu auth={auth} signOutSlot={desktopSignOutSlot} />
     ) : (
       <Link
         className="text-body text-text-secondary hover:text-text-primary"
@@ -28,7 +35,9 @@ export const AppShell = ({ auth, children }: AppShellProps) => {
     <>
       <SiteHeader
         authSlot={desktopAuth}
-        mobileAuthSlot={<MobileAuth auth={auth} />}
+        mobileAuthSlot={
+          <MobileAuth auth={auth} signOutSlot={mobileSignOutSlot} />
+        }
       />
       <main className="flex-1">{children}</main>
       <SiteFooter />

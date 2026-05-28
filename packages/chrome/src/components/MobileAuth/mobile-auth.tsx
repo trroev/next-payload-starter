@@ -2,16 +2,18 @@ import type { HeaderAuth } from "@repo/types/HeaderAuth"
 import { NavigationMenu } from "@repo/ui/components/NavigationMenu"
 import { cn } from "@repo/ui/utils/cn"
 import Link from "next/link"
+import type { ReactNode } from "react"
 
 export type MobileAuthProps = {
   auth: HeaderAuth
+  signOutSlot: ReactNode
 }
 
 const linkClass = cn(
   "text-heading-md text-text-primary hover:text-text-secondary"
 )
 
-export const MobileAuth = ({ auth }: MobileAuthProps) => {
+export const MobileAuth = ({ auth, signOutSlot }: MobileAuthProps) => {
   if (auth.status === "anonymous") {
     return (
       <NavigationMenu.Item>
@@ -46,13 +48,7 @@ export const MobileAuth = ({ auth }: MobileAuthProps) => {
           Submit post
         </NavigationMenu.Link>
       </NavigationMenu.Item>
-      <NavigationMenu.Item>
-        <form action={auth.onSignOut}>
-          <button className={`${linkClass} text-left`} type="submit">
-            Sign out
-          </button>
-        </form>
-      </NavigationMenu.Item>
+      <NavigationMenu.Item>{signOutSlot}</NavigationMenu.Item>
     </>
   )
 }

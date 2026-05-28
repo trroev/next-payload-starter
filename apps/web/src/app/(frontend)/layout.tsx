@@ -6,8 +6,9 @@ import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
 import type React from "react"
 import { SentryUser } from "~/components/SentryUser"
-import { headerSignOutAction } from "~/features/auth/actions/header-sign-out"
 import { auth } from "~/features/auth/auth.server"
+import { SignOutFormItem } from "~/features/auth/components/SignOutFormItem"
+import { SignOutMenuItem } from "~/features/auth/components/SignOutMenuItem"
 import { cormorant, manrope } from "~/fonts"
 import { getPayloadUserByBetterAuthId } from "~/lib/queries/payload-user-by-better-auth-id"
 
@@ -58,7 +59,6 @@ export default async function FrontendLayout({
       displayName,
       initials: buildInitials(displayName),
       avatarUrl,
-      onSignOut: headerSignOutAction,
     }
   }
 
@@ -71,7 +71,13 @@ export default async function FrontendLayout({
       <body className="flex min-h-dvh flex-col font-sans">
         <SessionProvider initialUser={session?.user ?? null}>
           <SentryUser />
-          <AppShell auth={headerAuth}>{children}</AppShell>
+          <AppShell
+            auth={headerAuth}
+            desktopSignOutSlot={<SignOutMenuItem />}
+            mobileSignOutSlot={<SignOutFormItem />}
+          >
+            {children}
+          </AppShell>
         </SessionProvider>
       </body>
     </html>
