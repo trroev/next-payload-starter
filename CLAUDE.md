@@ -53,6 +53,18 @@ Conventions that require discipline (not auto-enforced): readonly preference, bo
 
 **Filename casing is enforced by Biome's `useFilenamingConvention` rule** (per-package overrides in `biome.json`, all set to `kebab-case`). Directory casing (PascalCase for components/types, camelCase for utils) is documented above but not auto-enforced — Biome only checks filenames.
 
+### Dependency catalog
+Shared external deps (React, Next, TypeScript, `@types/*`, etc.) live in `pnpm-workspace.yaml` under `catalog:` (and named groups like `catalogs.peers`). Workspace packages reference them as `"react": "catalog:"` / `"react": "catalog:peers"`, so the version is owned in one place.
+
+Two gates keep the convention honest:
+
+- **`catalogMode: prefer`** (set in `pnpm-workspace.yaml`) — makes `pnpm add` write a `catalog:` reference at add-time for any dep the catalog already owns. Governs the add flow only.
+- **`pnpm catalog:check`** (`scripts/check-catalog.mjs`, run by `tooling/github/ci/lint/action.yml`) — fails CI when a committed `package.json` pins a literal version for a catalogued dep. Catches the gap `prefer` leaves open: hand-edits, copy-paste, merges.
+
+`prefer` over `strict` is deliberate: `strict` would force *every* dep into a catalog at add-time, broader than the convention (which targets only the catalog's own keys).
+
+**This check is core to the starter, not optional in a fork.** It is the only thing that prevents per-package version drift on shared deps from silently passing CI; deleting it gives up the guarantee `catalog:` references exist to provide.
+
 ### Logging
 `@repo/logger` is the only sanctioned logging primitive — `console.*` is banned by Biome's `noConsole` rule. Import the shared singleton or create a named sub-logger:
 
