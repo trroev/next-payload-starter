@@ -8,16 +8,15 @@
 // silently reintroduce the per-package drift the catalog exists to eliminate —
 // and it would pass CI today.
 //
-// The set of catalogued dep names is read straight from pnpm-workspace.yaml, so
-// the check tracks catalog changes automatically. We only need the dep *names*
-// (the keys), so a focused scanner is enough — no YAML dependency required.
-// pnpm's native `catalogMode: strict` is deliberately not used: it would force
-// *every* dep into a catalog, where the convention targets only the catalog's
-// own keys.
+// The set of catalogued dep names is read straight from pnpm-workspace.yaml via
+// the `yaml` package, so the check tracks catalog changes automatically. pnpm's
+// native `catalogMode: strict` is deliberately not used: it would force *every*
+// dep into a catalog, where the convention targets only the catalog's own keys.
 
 import { globSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { parse as parseYaml } from "yaml"
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..")
 
@@ -26,58 +25,21 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..")
 const CATALOG_REFERENCE = /^catalog:/
 
 /**
- * Collect every dep name owned by the catalog from pnpm-workspace.yaml.
- *
- * Structure:
- *   catalog:            # default catalog — dep keys at indent 2
- *     react: ^19.2.0
- *   catalogs:           # named catalogs — group keys at indent 2, deps at 4
- *     peers:
- *       react: ^19.0.0
- *
- * Returns the union of dep names across the default and all named catalogs.
+ * Collect every dep name owned by the catalog from pnpm-workspace.yaml — the
+ * union of the default `catalog` map and every named map under `catalogs`.
  */
 const readCatalogDepNames = () => {
-  const yaml = readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8")
-  const lines = yaml.split("\n")
-  const names = new Set()
+  const doc = parseYaml(
+    readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8")
+  )
 
-  let section = null // "catalog" | "catalogs" | null
-
-  for (const rawLine of lines) {
-    if (rawLine.trim() === "" || rawLine.trimStart().startsWith("#")) {
-      continue
-    }
-
-    const indent = rawLine.length - rawLine.trimStart().length
-
-    // A top-level key (indent 0) opens or closes a section.
-    if (indent === 0) {
-      const key = rawLine.split(":")[0].trim()
-      section = key === "catalog" || key === "catalogs" ? key : null
-      continue
-    }
-
-    // Default catalog: dep names sit one level in (indent 2).
-    if (section === "catalog" && indent === 2) {
-      names.add(stripKey(rawLine))
-      continue
-    }
-
-    // Named catalogs: indent 2 is the catalog group name (skip), indent 4 is a
-    // dep name within that group.
-    if (section === "catalogs" && indent === 4) {
-      names.add(stripKey(rawLine))
+  const names = new Set(Object.keys(doc.catalog ?? {}))
+  for (const group of Object.values(doc.catalogs ?? {})) {
+    for (const dep of Object.keys(group ?? {})) {
+      names.add(dep)
     }
   }
-
   return names
-}
-
-/** Extract the key from a `  "key": value` line, dropping any wrapping quotes. */
-const stripKey = (line) => {
-  const key = line.split(":")[0].trim()
-  return key.replace(/^["']|["']$/g, "")
 }
 
 const DEP_FIELDS = ["dependencies", "devDependencies", "peerDependencies"]
