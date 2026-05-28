@@ -25,6 +25,7 @@
     "@payloadcms/db-mongodb": "^3.84.1",
     "@payloadcms/plugin-cloud-storage": "^3.84.1",
     "@payloadcms/plugin-seo": "^3.84.1",
+    "@payloadcms/richtext-lexical": "catalog:",
     "@repo/env": "workspace:*",
     "@repo/fetch": "workspace:*",
     "@repo/logger": "workspace:*",
