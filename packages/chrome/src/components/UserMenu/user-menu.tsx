@@ -5,14 +5,12 @@ import type { SignedInAuth } from "@repo/types/HeaderAuth"
 import { Avatar } from "@repo/ui/components/Avatar"
 import { Menu } from "@repo/ui/components/Menu"
 import Link from "next/link"
-import type { ReactNode } from "react"
 
 export type UserMenuProps = {
   auth: SignedInAuth
-  signOutSlot: ReactNode
 }
 
-export const UserMenu = ({ auth, signOutSlot }: UserMenuProps) => (
+export const UserMenu = ({ auth }: UserMenuProps) => (
   <Menu.Root>
     <Menu.Trigger
       aria-label={`Account menu for ${auth.displayName}`}
@@ -34,7 +32,9 @@ export const UserMenu = ({ auth, signOutSlot }: UserMenuProps) => (
         Submit post
       </Menu.LinkItem>
       <Menu.Separator />
-      {signOutSlot}
+      <Menu.Item onClick={auth.onSignOut} variant="destructive">
+        Sign out
+      </Menu.Item>
     </Menu.Content>
   </Menu.Root>
 )
