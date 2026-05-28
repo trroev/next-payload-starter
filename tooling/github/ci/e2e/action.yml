@@ -25,4 +25,6 @@ runs:
 
     - name: E2E
       shell: bash
+      env:
+        SKIP_ENV_VALIDATION: '1'
       run: pnpm --filter @repo/e2e run e2e
