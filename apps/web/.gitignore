@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# payload local-disk media uploads (only used when CLOUDINARY_* env is unset)
+/media/

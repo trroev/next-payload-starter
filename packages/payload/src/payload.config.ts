@@ -17,11 +17,32 @@ import { buildConfig } from "payload"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
+type CloudinaryConfig = {
+  readonly cloud_name: string
+  readonly api_key: string
+  readonly api_secret: string
+}
+
+const resolveCloudinaryConfig = (): CloudinaryConfig | undefined => {
+  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
+    cloudinaryEnv
+  if (!(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET)) {
+    return
+  }
+  return {
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET,
+  }
+}
+
 type CreatePayloadConfigOptions = {
   readonly baseDir: string
 }
 
 export function createPayloadConfig({ baseDir }: CreatePayloadConfigOptions) {
+  const cloudinaryConfig = resolveCloudinaryConfig()
+
   return buildConfig({
     admin: {
       autoLogin:
@@ -47,22 +68,22 @@ export function createPayloadConfig({ baseDir }: CreatePayloadConfigOptions) {
     }),
     editor: lexicalEditor(),
     plugins: [
-      cloudStoragePlugin({
-        collections: {
-          media: {
-            adapter: cloudinaryAdapter({
-              config: {
-                cloud_name: cloudinaryEnv.CLOUDINARY_CLOUD_NAME,
-                api_key: cloudinaryEnv.CLOUDINARY_API_KEY,
-                api_secret: cloudinaryEnv.CLOUDINARY_API_SECRET,
+      ...(cloudinaryConfig
+        ? [
+            cloudStoragePlugin({
+              collections: {
+                media: {
+                  adapter: cloudinaryAdapter({
+                    config: cloudinaryConfig,
+                    folder: "starter",
+                  }),
+                  disableLocalStorage: true,
+                  disablePayloadAccessControl: true,
+                },
               },
-              folder: "starter",
             }),
-            disableLocalStorage: true,
-            disablePayloadAccessControl: true,
-          },
-        },
-      }),
+          ]
+        : []),
       seoPlugin({
         collections: ["posts"],
         generateDescription: ({ doc }) =>

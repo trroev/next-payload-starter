@@ -10,9 +10,9 @@ const env = createEnv({
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   },
   server: {
-    CLOUDINARY_CLOUD_NAME: z.string(),
-    CLOUDINARY_API_KEY: z.string(),
-    CLOUDINARY_API_SECRET: z.string(),
+    CLOUDINARY_CLOUD_NAME: z.string().optional(),
+    CLOUDINARY_API_KEY: z.string().optional(),
+    CLOUDINARY_API_SECRET: z.string().optional(),
   },
 })
 
