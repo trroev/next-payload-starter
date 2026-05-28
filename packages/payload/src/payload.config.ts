@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url"
 import { mongooseAdapter } from "@payloadcms/db-mongodb"
 import { cloudStoragePlugin } from "@payloadcms/plugin-cloud-storage"
 import { seoPlugin } from "@payloadcms/plugin-seo"
+import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { env as authEnv } from "@repo/env/auth"
 import { env as cloudinaryEnv } from "@repo/env/cloudinary"
 import { env as payloadEnv } from "@repo/env/payload"
@@ -44,6 +45,7 @@ export function createPayloadConfig({ baseDir }: CreatePayloadConfigOptions) {
     db: mongooseAdapter({
       url: authEnv.MONGODB_URI,
     }),
+    editor: lexicalEditor(),
     plugins: [
       cloudStoragePlugin({
         collections: {
