@@ -43,6 +43,11 @@ export default async function FrontendLayout({
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
 
+  const handleSignOut = async (): Promise<void> => {
+    "use server"
+    await signOutAction()
+  }
+
   let headerAuth: HeaderAuth = { status: "anonymous" }
   if (session) {
     const payloadUser = await getPayloadUserByBetterAuthId(session.user.id)
@@ -58,10 +63,7 @@ export default async function FrontendLayout({
       displayName,
       initials: buildInitials(displayName),
       avatarUrl,
-      onSignOut: async () => {
-        "use server"
-        await signOutAction()
-      },
+      onSignOut: handleSignOut,
     }
   }
 
