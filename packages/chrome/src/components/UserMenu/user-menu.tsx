@@ -1,3 +1,5 @@
+"use client"
+
 import { transformCloudinaryAvatar } from "@repo/chrome/utils/transformCloudinary"
 import type { SignedInAuth } from "@repo/types/HeaderAuth"
 import { Avatar } from "@repo/ui/components/Avatar"
