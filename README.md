@@ -35,7 +35,6 @@ Spin up a new repo from this template:
 gh repo create my-app --template trroev/next-payload-starter --public
 cd my-app
 pnpm install
-cp .env.local.example .env.local       # fill in MONGODB_URI + secrets
 docker compose up -d                   # local MongoDB on :27017
 pnpm dev                               # app at :3000, admin at /admin
 ```
@@ -48,22 +47,20 @@ pnpm dev                               # app at :3000, admin at /admin
 
 ### Environment
 
-The `apps/web/.env.{production,development,development.local}` files are shipped with their keys but no values. Fill them in for the environments you need, then encrypt them:
+Env loading goes through [dotenvx](https://dotenvx.com) (`--convention=nextjs`). The committed `apps/web/.env.development` ships **working dummy defaults** — a local Mongo URI, dev-only secrets — so a fresh clone runs `pnpm dev` with no env setup. Override anything per-machine in the gitignored `apps/web/.env.development.local` (or `.env.local`); those win over the committed defaults.
+
+The dev-only `PAYLOAD_SECRET` / `BETTER_AUTH_SECRET` are placeholders — **replace them before deploying anywhere real.** For shared or production secrets, put real values in `apps/web/.env.production` (or `.env.development`) and encrypt them in place:
 
 ```sh
 cd apps/web
-dotenvx encrypt -f .env.development
+dotenvx encrypt -f .env.production
 ```
 
-This generates `apps/web/.env.keys` (the private decryption key, gitignored) and rewrites the env file in-place with encrypted secrets. Commit the encrypted env file; **never commit `.env.keys`** — keep it in your password manager.
-
-To add or update a secret later:
+This generates `apps/web/.env.keys` (the private decryption key, gitignored) and rewrites the env file with encrypted ciphertext. Commit the encrypted file; **never commit `.env.keys`** — keep it in your password manager. To add or update a secret later:
 
 ```sh
-dotenvx set SOME_SECRET "value" -f .env.development
+dotenvx set SOME_SECRET "value" -f .env.production
 ```
-
-For local-only work, `.env.local` (gitignored) at the repo root is the simplest path — no encryption, no `.env.keys`.
 
 ### MongoDB
 

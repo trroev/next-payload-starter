@@ -8,6 +8,10 @@ node_modules
 # Encryption keys — contains private decryption keys, never commit
 .env.keys
 
+# Local env overrides — never commit (encrypted .env.{development,production} are committed)
+.env.local
+.env*.local
+
 # Testing
 coverage
 !tooling/github/ci/coverage/
