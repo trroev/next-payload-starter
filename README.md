@@ -14,7 +14,7 @@ The `posts` collection and `/posts` routes are a deliberately skeletal example d
 | CMS | PayloadCMS 3 (embedded) + `@payloadcms/plugin-seo` + live preview |
 | Database | MongoDB (local Docker or hosted Atlas) |
 | Auth | better-auth |
-| Images | Cloudinary (custom Payload storage adapter) |
+| Images | Cloudinary (optional, custom Payload storage adapter) |
 | Styling | TailwindCSS v4 |
 | Headless UI | Base UI |
 | Forms | TanStack Form |
@@ -22,7 +22,7 @@ The `posts` collection and `/posts` routes are a deliberately skeletal example d
 | Pattern matching | ts-pattern |
 | Linting / formatting | Biome (via ultracite) |
 | Component workshop | Storybook |
-| Testing | Vitest |
+| Testing | Vitest, Playwright |
 | Hosting | Vercel (single deployment, Payload embedded) |
 
 ---
@@ -62,6 +62,8 @@ This generates `apps/web/.env.keys` (the private decryption key, gitignored) and
 dotenvx set SOME_SECRET "value" -f .env.production
 ```
 
+Each `@repo/env/<subsystem>` module validates only the keys it owns; see [`packages/env/README.md`](./packages/env/README.md) for the subpath map.
+
 ### MongoDB
 
 Local dev uses the Docker container in `docker-compose.yml`. For a hosted database, see [`docs/atlas-setup.md`](./docs/atlas-setup.md) for the full Atlas provisioning runbook (cluster, network access, per-database users).
@@ -73,25 +75,34 @@ Local dev uses the Docker container in `docker-compose.yml`. For a hosted databa
 ```
 next-payload-starter/
 ├── apps/
-│   ├── web/                # Next.js 16 + PayloadCMS (single deployment)
-│   └── storybook/          # Component workshop for @repo/ui
+│   ├── web/                  # Next.js 16 + PayloadCMS — the deployable
+│   ├── storybook/            # Component workshop
+│   └── e2e/                  # Playwright suite driving apps/web
 ├── packages/
-│   ├── auth/               # better-auth configuration
-│   ├── chrome/             # App shell (header, nav, user menu)
-│   ├── env/                # Shared env loading + zod schema
-│   ├── logger/             # Isomorphic structured logger (LogLayer + pino)
-│   ├── payload/            # Payload collections, hooks, adapters
-│   ├── storybook-config/   # Shared Storybook config
-│   ├── tailwind/           # Tailwind v4 preset + design tokens
-│   ├── testing/            # Shared Vitest config + MSW handlers + factories
-│   ├── tsconfig/           # Shared TypeScript configs
-│   ├── types/              # Shared TypeScript types
-│   ├── ui/                 # Shared React components (Base UI wrappers)
-│   └── utils/              # Pure helpers (formatDuration, validateExternalUrl, …)
+│   ├── auth/                 # better-auth configuration
+│   ├── chrome/               # App shell (header, nav, user menu)
+│   ├── env/                  # Per-subsystem env validation
+│   ├── logger/               # Structured logger (pino via LogLayer)
+│   ├── payload/              # Payload collections, hooks, adapters
+│   ├── storybook-config/     # Shared Storybook preview
+│   ├── tailwind/             # Tailwind v4 preset + design tokens
+│   ├── testing/              # Vitest config, MSW handlers, factories
+│   ├── tsconfig/             # Shared TypeScript configs
+│   ├── types/                # Shared TypeScript types
+│   ├── ui/                   # Base UI–wrapped component library
+│   └── utils/                # Pure helpers
 ├── tooling/
-│   └── github/             # Composite GitHub Actions for CI
-└── docs/                   # Setup runbooks
+│   └── github/               # Composite GitHub Actions
+└── docs/
+    ├── atlas-setup.md
+    └── decisions/            # Investigation outcomes (#27, #28, #29, …)
 ```
+
+Per-package READMEs:
+
+- Apps — [`web`](./apps/web/README.md), [`storybook`](./apps/storybook/README.md), [`e2e`](./apps/e2e/README.md)
+- Packages — [`auth`](./packages/auth/README.md), [`chrome`](./packages/chrome/README.md), [`env`](./packages/env/README.md), [`logger`](./packages/logger/README.md), [`payload`](./packages/payload/README.md), [`storybook-config`](./packages/storybook-config/README.md), [`tailwind`](./packages/tailwind/README.md), [`testing`](./packages/testing/README.md), [`tsconfig`](./packages/tsconfig/README.md), [`types`](./packages/types/README.md), [`ui`](./packages/ui/README.md), [`utils`](./packages/utils/README.md)
+- CI — [`tooling/github`](./tooling/github/README.md)
 
 ### Import boundaries
 
@@ -100,9 +111,11 @@ Layered dependencies are enforced by Biome's `noRestrictedImports` rule in `biom
 - `packages/{utils,types,env,logger}` may not import from `packages/{ui,chrome,payload,auth}`
 - `packages/ui` may not import from `packages/{chrome,payload}` or any app
 - `packages/chrome` may not import from any app
-- `apps/web/src/features/<a>` may not import from `apps/web/src/features/<b>` or from `~/app/**`
+- `apps/web/src/features/**` may not import via the `~/features/*` alias at all (cross-feature imports are banned, and intra-feature imports must use relative paths) and may not import from `~/app/**`
 
-**Every new feature requires adding its zone to `biome.json`** — duplicate an existing `apps/web/src/features/<name>/**` override and list the sibling features in the `group` patterns.
+**Adding a new feature requires no `biome.json` edits** — the single `apps/web/src/features/**` override applies to every feature.
+
+`pnpm boundaries` (Turborepo's `turbo boundaries`, run in the CI lint job) complements Biome by catching imports of packages **not declared** in a `package.json`. See [`tooling/github/README.md`](./tooling/github/README.md) for the full CI layout.
 
 ---
 
@@ -119,41 +132,19 @@ Layered dependencies are enforced by Biome's `noRestrictedImports` rule in `biom
 | `pnpm typecheck` | Type-check all packages |
 | `pnpm test` | Run test suite |
 | `pnpm coverage` | Run tests with coverage |
+| `pnpm boundaries` | `turbo boundaries` — undeclared-dep check |
+| `pnpm catalog:check` | Fail if a `package.json` pins a catalogued dep |
 | `pnpm generate:types` | Regenerate Payload-generated TS types |
-
----
-
-## ISR revalidation
-
-Post pages are statically rendered and revalidated on demand. The Payload `Posts` collection has an `afterChange` hook that POSTs to the app's revalidation endpoint whenever a post is published or updated.
-
-`POST /api/revalidate`
-
-- **Header:** `Authorization: Bearer $REVALIDATION_SECRET`
-- **Body:** `{ "slug": "<post-slug>" }` or `{ "tag": "<cache-tag>" }`
-- **Effect (slug):** revalidates `/`, `/posts`, `/posts/<slug>`, and the `post:<slug>` tag
-
-Revalidation failures are logged but don't fail the Payload save — the page just stays on its old static copy until the next time-based or manual revalidate.
 
 ---
 
 ## Logging
 
-`@repo/logger` is the shared logging primitive — `console.*` is banned by Biome's `noConsole` rule. Built on [LogLayer](https://loglayer.dev) with pino (JSON in production, pino-pretty in dev). Node-only by design; see `packages/logger/README.md` for the #27 investigation outcome.
+`@repo/logger` is the sanctioned logging primitive; `console.*` is banned by Biome's `noConsole` rule. See [`packages/logger/README.md`](./packages/logger/README.md).
 
-```ts
-import { createLogger, logger } from "@repo/logger"
+## ISR revalidation
 
-const log = createLogger({ name: "payload.revalidate-post" })
-
-log.withMetadata({ status: 502 }).error("revalidation failed")
-
-// Scoped logger: pass context at creation, or branch a child explicitly.
-const requestLog = createLogger({ name: "api.request", context: { requestId } })
-const childLog = log.child().withContext({ requestId })
-```
-
-`withContext` returns a new child logger so per-request context can't leak onto the long-lived root. Sensitive keys (`password`, `token`, `authorization`, `cookie`, `set-cookie`, `secret`) are redacted by default; pass `createLogger({ redact: ["apiKey"] })` to extend the list. Level is controlled by `LOG_LEVEL` (`trace` | `debug` | `info` | `warn` | `error` | `fatal`) — defaults to `info` in production, `debug` otherwise.
+Post pages are statically rendered and revalidated on demand via a Payload `afterChange` hook. See [`packages/payload/README.md`](./packages/payload/README.md#isr-revalidation) for the request shape and retry behavior.
 
 ---
 
@@ -166,7 +157,7 @@ const childLog = log.child().withContext({ requestId })
 - Lint, type-check, tests, and a successful build
 - Codecov upload — patch coverage gate at 80% (configured in `codecov.yml`)
 
-`SKIP_ENV_VALIDATION=true` is set for the entire job so steps that touch the Payload config don't require real credentials.
+`SKIP_ENV_VALIDATION=true` is set for the steps that touch the Payload config so they don't require real credentials. See [`tooling/github/README.md`](./tooling/github/README.md) for per-action detail.
 
 ### Remote caching (optional)
 

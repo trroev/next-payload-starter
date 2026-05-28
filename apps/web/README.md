@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# `web`
 
-## Getting Started
+The Next.js 16 + PayloadCMS 3 application — the single deployable in this
+monorepo. Payload is embedded (no separate server process) and exposes its
+admin UI at `/admin`. Pages live under `src/app/`, feature modules under
+`src/features/`, and shared chrome / UI come from
+[`@repo/chrome`](../../packages/chrome/README.md) and
+[`@repo/ui`](../../packages/ui/README.md).
 
-First, run the development server:
+For the full stack overview, getting-started flow, and env handling, see the
+[repo root README](../../README.md).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Run locally
+
+From the repo root:
+
+```sh
+pnpm install
+docker compose up -d                   # local MongoDB on :27017
+pnpm dev                               # this app on :3000, admin at /admin
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or from this directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+## Scripts
 
-## Learn More
+| Script | Description |
+|---|---|
+| `pnpm dev` | Next.js dev server with Turbopack |
+| `pnpm build` | Production build (Next + Payload bundled together) |
+| `pnpm start` | Run the production build |
+| `pnpm typecheck` | `next typegen` then `tsc --noEmit` |
+| `pnpm generate:types` | Regenerate `packages/payload/src/types/payload-types.ts` (commit the result) |
+| `pnpm generate:importmap` | Regenerate Payload admin import map |
+| `pnpm test` | Vitest |
 
-To learn more about Next.js, take a look at the following resources:
+`pnpm with-env <cmd>` is the shared wrapper for `dotenvx run
+--convention=nextjs --`. The `postinstall` hook runs `generate:types` and
+`generate:importmap` automatically when `.env.keys` is present and `$CI` is
+unset.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/` — App Router routes, layouts, and the Payload admin mount.
+- `src/features/<name>/` — Self-contained feature modules. Cross-feature
+  imports are banned by Biome's `noRestrictedImports`; intra-feature imports
+  use relative paths only.
+- `src/components/` — Shared in-app components that don't fit a single feature.
+- `src/lib/` — App-local helpers (server actions, auth glue).
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This app deploys as a single Vercel project; see
+[`vercel.json`](./vercel.json) and the root README's "Deployment" section. The
+embedded-Payload architecture means no separate server.

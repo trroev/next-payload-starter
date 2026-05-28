@@ -1,8 +1,40 @@
-# @repo/payload
+# `@repo/payload`
 
 Embedded [PayloadCMS 3](https://payloadcms.com) configuration for the starter:
 collections, access control, hooks, the Payload config factory, and a Cloudinary
-storage adapter wired to the `media` collection.
+storage adapter wired to the `media` collection. Generated TS types
+(`src/types/payload-types.ts`) are committed; regenerate with
+`pnpm generate:types` from `apps/web` after editing collections.
+
+**Layer position:** mid. Imports from foundation packages (`@repo/env`,
+`@repo/logger`, `@repo/utils`, `@repo/types`); no imports from `ui` / `chrome` /
+apps.
+
+## Exports
+
+| Subpath | Owns |
+|---|---|
+| `@repo/payload` | `createPayloadConfig`, `cloudinaryAdapter`, collection slugs |
+| `@repo/payload/hooks/*` | Collection `afterChange` hooks (`revalidatePost`, `revalidateHomepage`) |
+
+## ISR revalidation
+
+Post pages are statically rendered and revalidated on demand. The `Posts`
+collection's `afterChange` hook POSTs to the app's revalidation endpoint
+whenever a post is published or updated.
+
+`POST /api/revalidate`
+
+- **Header:** `Authorization: Bearer $REVALIDATION_SECRET`
+- **Body:** `{ "slug": "<post-slug>" }` or `{ "tag": "<cache-tag>" }`
+- **Effect (slug):** revalidates `/`, `/posts`, `/posts/<slug>`, and the
+  `post:<slug>` tag
+
+Revalidation failures are logged via [`@repo/logger`](../logger/README.md) but
+don't fail the Payload save — the page just stays on its old static copy until
+the next time-based or manual revalidate. The hook itself is the in-repo
+reference for Better Fetch's retry/timeout pattern; see
+`src/hooks/revalidate-post/`.
 
 ## Media storage
 
@@ -41,50 +73,6 @@ instead, replace the conditional `cloudStoragePlugin(...)` block in
 and delete `src/adapters/cloudinary/` plus the `cloudinary` dependency and
 `@repo/env/cloudinary` import.
 
-## Investigation: keep or replace the custom Cloudinary adapter? (#29)
+## Decision log
 
-This section records the outcome of investigation issue #29, which weighed
-keeping the hand-written Cloudinary adapter against swapping it for a community
-adapter or dropping cloud storage from the starter defaults.
-
-### Decision
-
-**Default to Payload's local-disk storage; keep the custom Cloudinary adapter
-as an opt-in example wired only when `CLOUDINARY_*` env is set.** Implemented in
-this change.
-
-Concretely:
-
-- `@repo/env/cloudinary` now declares all three `CLOUDINARY_*` vars as
-  `z.string().optional()` so the env module no longer throws on a fresh fork.
-- `createPayloadConfig` calls `resolveCloudinaryConfig()`; when it returns
-  `undefined` the `cloudStoragePlugin(...)` entry is omitted from the plugins
-  array and Payload's built-in local-disk storage takes over.
-- The adapter file at `src/adapters/cloudinary/index.ts` stays put as the
-  canonical "how to write a Payload storage adapter" reference for forkers.
-
-### Rationale
-
-Three considerations drove the choice:
-
-1. **Starter onboarding.** A `git clone && pnpm dev` flow that requires
-   provisioning a Cloudinary account before the app boots is a poor default for
-   a "skip the first two weeks" starter. Local disk gets a forker to a working
-   admin upload in zero steps; Cloudinary is a paste-three-env-vars upgrade.
-2. **Payload has no official Cloudinary adapter.** Of the
-   `@payloadcms/storage-*` family — S3, Vercel Blob, UploadThing, GCS, Azure —
-   none target Cloudinary. Swapping our ~80-line adapter for a community package
-   would trade auditable in-tree code for an external dependency without a
-   clear upgrade in surface area. Keeping it in-tree preserves the
-   illustrative value of a real adapter implementation.
-3. **The adapter is small and self-contained.** `buildPublicId`, the
-   `upload_stream` Promise wrapper, and the `staticHandler` redirect total
-   under 80 lines and have not needed maintenance since they were written.
-   Carrying that as a documented example costs less than negotiating a
-   community-adapter dependency.
-
-### Out of scope
-
-The `CLOUDINARY_URL: ''` workaround in
-`tooling/github/ci/generate-types/action.yml` is tracked separately in #34 and
-not removed here.
+- [#29 — Keep or replace the custom Cloudinary adapter?](../../docs/decisions/29-cloudinary.md)
