@@ -62,6 +62,14 @@ Caches Playwright browsers by `pnpm-lock.yaml` hash, regenerates Payload
 types, then runs `@repo/e2e` against `apps/web`. See
 [`apps/e2e/README.md`](../../apps/e2e/README.md) for the suite layout.
 
+`SKIP_ENV_VALIDATION=1` is set on both the `Generate Payload types` step
+and the `E2E` step. The latter is needed because Playwright's
+`globalSetup` seeds the database by importing the Payload config, which
+transitively loads `@repo/env/app`; the parent process is not wrapped
+in dotenvx, so without the flag `createEnv` throws on `REVALIDATION_SECRET`
+before any test runs. The `apps/web` web server is still launched via
+`dotenvx run --convention=nextjs` and validates env normally.
+
 ## Remote caching
 
 The workflow propagates `TURBO_TOKEN` (secret) and `TURBO_TEAM` (variable) so
