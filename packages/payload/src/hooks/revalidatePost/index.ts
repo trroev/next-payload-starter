@@ -1,4 +1,4 @@
-import { fetchClient } from "@repo/fetch"
+import { betterFetch } from "@better-fetch/fetch"
 import { createLogger } from "@repo/logger"
 import type { CollectionAfterChangeHook } from "payload"
 import { match, P } from "ts-pattern"
@@ -14,11 +14,24 @@ export const revalidatePost: CollectionAfterChangeHook = async ({ doc }) => {
     .with(
       { status: "published", baseUrl: P.string, secret: P.string },
       async ({ baseUrl, secret }) => {
-        await fetchClient(`${baseUrl}/api/revalidate`, {
+        const { error } = await betterFetch(`${baseUrl}/api/revalidate`, {
           method: "POST",
           headers: { Authorization: `Bearer ${secret}` },
           body: { slug: doc.slug },
+          retry: { type: "linear", attempts: 2, delay: 500 },
+          timeout: 10_000,
+          throw: false,
         })
+
+        if (error) {
+          log
+            .withMetadata({
+              url: `${baseUrl}/api/revalidate`,
+              status: error.status,
+              statusText: error.statusText,
+            })
+            .error("revalidation request failed")
+        }
       }
     )
     .with({ status: "published" }, () => {

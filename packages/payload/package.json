@@ -22,12 +22,12 @@
     "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
   },
   "dependencies": {
+    "@better-fetch/fetch": "catalog:",
     "@payloadcms/db-mongodb": "^3.84.1",
     "@payloadcms/plugin-cloud-storage": "^3.84.1",
     "@payloadcms/plugin-seo": "^3.84.1",
     "@payloadcms/richtext-lexical": "catalog:",
     "@repo/env": "workspace:*",
-    "@repo/fetch": "workspace:*",
     "@repo/logger": "workspace:*",
     "cloudinary": "^2.10.0",
     "ts-pattern": "^5.9.0"

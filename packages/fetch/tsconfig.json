@@ -1,5 +1,0 @@
-{
-  "extends": "@repo/tsconfig/library.json",
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
-}
