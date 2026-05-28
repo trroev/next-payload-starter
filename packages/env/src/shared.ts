@@ -3,7 +3,11 @@ import { z } from "zod"
 
 const TRAILING_SLASH = /\/$/
 
-const NODE_ENVS = ["development", "production", "test"] as const
+const NODE_ENVS = [
+  "development",
+  "production",
+  "test",
+] as const satisfies ReadonlyArray<string>
 
 const nodeEnvSchema = z.enum(NODE_ENVS)
 
