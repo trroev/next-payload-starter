@@ -6,7 +6,7 @@ import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
 import type React from "react"
 import { SentryUser } from "~/components/SentryUser"
-import { signOutAction } from "~/features/auth/actions/sign-out"
+import { headerSignOutAction } from "~/features/auth/actions/header-sign-out"
 import { auth } from "~/features/auth/auth.server"
 import { cormorant, manrope } from "~/fonts"
 import { getPayloadUserByBetterAuthId } from "~/lib/queries/payload-user-by-better-auth-id"
@@ -43,11 +43,6 @@ export default async function FrontendLayout({
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
 
-  const handleSignOut = async (): Promise<void> => {
-    "use server"
-    await signOutAction()
-  }
-
   let headerAuth: HeaderAuth = { status: "anonymous" }
   if (session) {
     const payloadUser = await getPayloadUserByBetterAuthId(session.user.id)
@@ -63,7 +58,7 @@ export default async function FrontendLayout({
       displayName,
       initials: buildInitials(displayName),
       avatarUrl,
-      onSignOut: handleSignOut,
+      onSignOut: headerSignOutAction,
     }
   }
 
