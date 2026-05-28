@@ -1,9 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
+import { baseEnvOptions } from "./shared"
 
 const env = createEnv({
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  emptyStringAsUndefined: true,
+  ...baseEnvOptions,
   experimental__runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL:

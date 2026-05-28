@@ -1,34 +1,18 @@
 import { createEnv } from "@t3-oss/env-nextjs"
-import { match, P } from "ts-pattern"
 import { z } from "zod"
+import {
+  baseEnvOptions,
+  baseUrlSchema,
+  nodeEnvSchema,
+  resolveBaseUrl,
+} from "./shared"
 
-const TRAILING_SLASH = /\/$/
-
-const resolvedBase = match({
-  base: process.env.BASE_URL,
-  vercel: process.env.VERCEL_URL,
-})
-  .with({ base: P.string.startsWith("http") }, ({ base }) => base)
-  .with(
-    { base: P.string },
-    ({ base }) => `https://${base.replace(TRAILING_SLASH, "")}`
-  )
-  .with(
-    { base: P.nullish, vercel: P.string },
-    ({ vercel }) => `https://${vercel}`
-  )
-  .with({ base: P.nullish, vercel: P.nullish }, () => undefined)
-  .exhaustive()
-
-if (resolvedBase !== undefined) {
-  process.env.BASE_URL = resolvedBase
-}
+resolveBaseUrl()
 
 const env = createEnv({
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  emptyStringAsUndefined: true,
+  ...baseEnvOptions,
   server: {
-    BASE_URL: z.string().url(),
+    BASE_URL: baseUrlSchema,
     REVALIDATION_SECRET: z.string(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
@@ -38,7 +22,7 @@ const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
   shared: {
-    NODE_ENV: z.enum(["development", "production", "test"]),
+    NODE_ENV: nodeEnvSchema,
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,

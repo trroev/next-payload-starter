@@ -1,14 +1,13 @@
 import { createEnv } from "@t3-oss/env-nextjs"
-import { z } from "zod"
+import { baseEnvOptions, baseUrlSchema, resolveBaseUrl } from "./shared"
 
-// Optional here (unlike the required BASE_URL in `@repo/env/app`) so importing
-// `@repo/fetch` never throws when BASE_URL is unset.
+resolveBaseUrl()
+
 const env = createEnv({
-  emptyStringAsUndefined: true,
+  ...baseEnvOptions,
   experimental__runtimeEnv: {},
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
-    BASE_URL: z.string().url().optional(),
+    BASE_URL: baseUrlSchema.optional(),
   },
 })
 

@@ -1,12 +1,12 @@
 import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
+import { baseEnvOptions } from "./shared"
 
 const env = createEnv({
-  emptyStringAsUndefined: true,
+  ...baseEnvOptions,
   experimental__runtimeEnv: {
     PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
   },
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   server: {
     PAYLOAD_ADMIN_EMAIL: z.email().nullish(),
     PAYLOAD_ADMIN_PASSWORD: z.string().nullish(),
