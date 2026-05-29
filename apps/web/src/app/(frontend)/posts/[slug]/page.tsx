@@ -1,3 +1,4 @@
+import { RichText } from "@payloadcms/richtext-lexical/react"
 import type { Metadata } from "next"
 import { draftMode } from "next/headers"
 import { notFound } from "next/navigation"
@@ -48,10 +49,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
       {post.sections?.map((section) => (
         <section className="space-y-2" key={section.id}>
-          <h2 className="font-display text-heading-md text-text-primary">
-            {section.heading}
-          </h2>
-          <p className="text-body text-text-primary">{section.body}</p>
+          {section.heading && (
+            <h2 className="font-display text-heading-md text-text-primary">
+              {section.heading}
+            </h2>
+          )}
+          <RichText data={section.body} />
         </section>
       ))}
     </article>

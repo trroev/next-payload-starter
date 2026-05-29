@@ -188,28 +188,27 @@ export interface Post {
    * Link to the registered user who authored this post.
    */
   authorUser?: (string | null) | User;
-  richTextBody?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   /**
    * Group post content into logical sections. Drag to reorder.
    */
   sections?:
     | {
-        heading: string;
-        body: string;
+        heading?: string | null;
+        body: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
         id?: string | null;
       }[]
     | null;
@@ -383,7 +382,6 @@ export interface PostsSelect<T extends boolean = true> {
   coverImage?: T;
   author?: T;
   authorUser?: T;
-  richTextBody?: T;
   sections?:
     | T
     | {

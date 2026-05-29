@@ -9,6 +9,38 @@ export type SeededPost = {
   readonly sectionBody: string
 }
 
+const lexicalParagraph = (text: string) => ({
+  root: {
+    type: "root",
+    children: [
+      {
+        type: "paragraph",
+        version: 1,
+        direction: "ltr" as const,
+        format: "" as const,
+        indent: 0,
+        textFormat: 0,
+        textStyle: "",
+        children: [
+          {
+            type: "text",
+            version: 1,
+            detail: 0,
+            format: 0,
+            mode: "normal",
+            style: "",
+            text,
+          },
+        ],
+      },
+    ],
+    direction: "ltr" as const,
+    format: "" as const,
+    indent: 0,
+    version: 1,
+  },
+})
+
 export const seedPublishedPost = async (): Promise<SeededPost> => {
   const payload = await getPayload({ config })
   const title = "E2E published post"
@@ -21,7 +53,9 @@ export const seedPublishedPost = async (): Promise<SeededPost> => {
       title,
       slug,
       description: "Seeded for the end-to-end suite.",
-      sections: [{ heading: sectionHeading, body: sectionBody }],
+      sections: [
+        { heading: sectionHeading, body: lexicalParagraph(sectionBody) },
+      ],
       _status: "published",
     },
   })

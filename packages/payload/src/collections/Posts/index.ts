@@ -1,6 +1,7 @@
 import { env as appEnv } from "@repo/env/app"
 import { everyone } from "@repo/payload/access/everyone"
 import { isAdmin } from "@repo/payload/access/isAdmin"
+import { richTextField } from "@repo/payload/fields/richTextField"
 import { revalidatePost } from "@repo/payload/hooks/revalidatePost"
 import { stampPublishedAt } from "@repo/payload/hooks/stampPublishedAt"
 import { type CollectionConfig, slugField } from "payload"
@@ -67,10 +68,6 @@ export const Posts: CollectionConfig = {
       type: "relationship",
     },
     {
-      name: "richTextBody",
-      type: "richText",
-    },
-    {
       admin: {
         description:
           "Group post content into logical sections. Drag to reorder.",
@@ -79,14 +76,9 @@ export const Posts: CollectionConfig = {
       fields: [
         {
           name: "heading",
-          required: true,
           type: "text",
         },
-        {
-          name: "body",
-          required: true,
-          type: "textarea",
-        },
+        richTextField({ name: "body", required: true }),
       ],
       name: "sections",
       type: "array",
