@@ -1,11 +1,24 @@
-import { RichText } from "@payloadcms/richtext-lexical/react"
+import {
+  type InternalDocResolvers,
+  RichText,
+} from "@repo/payload/components/RichText"
 import type { Metadata } from "next"
 import { draftMode } from "next/headers"
 import { notFound } from "next/navigation"
+import { match, P } from "ts-pattern"
 import {
   getDraftPostBySlug,
   getPostBySlug,
 } from "~/features/posts/api/post-by-slug"
+
+const resolvePostHref = (doc: unknown): string | undefined =>
+  match(doc)
+    .with({ slug: P.string }, ({ slug }) => `/posts/${slug}`)
+    .otherwise(() => undefined)
+
+const internalDocResolvers: InternalDocResolvers = {
+  posts: resolvePostHref,
+}
 
 type PostPageProps = {
   params: Promise<{ slug: string }>
@@ -54,7 +67,10 @@ export default async function PostPage({ params }: PostPageProps) {
               {section.heading}
             </h2>
           )}
-          <RichText data={section.body} />
+          <RichText
+            data={section.body}
+            internalDocResolvers={internalDocResolvers}
+          />
         </section>
       ))}
     </article>
