@@ -11,12 +11,10 @@ const env = createEnv({
       (process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : undefined),
-    MONGODB_URI: process.env.MONGODB_URI,
   },
   server: {
     BETTER_AUTH_SECRET: z.string(),
     BETTER_AUTH_URL: z.string(),
-    MONGODB_URI: z.string(),
   },
 })
 

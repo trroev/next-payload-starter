@@ -25,6 +25,7 @@
   "dependencies": {
     "@better-fetch/fetch": "catalog:",
     "@payloadcms/db-mongodb": "^3.84.1",
+    "@payloadcms/db-postgres": "catalog:",
     "@payloadcms/plugin-cloud-storage": "^3.84.1",
     "@payloadcms/plugin-seo": "^3.84.1",
     "@payloadcms/richtext-lexical": "catalog:",
