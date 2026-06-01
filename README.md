@@ -75,7 +75,23 @@ pnpm db:select postgres   # or `mongodb`; omit the argument for an interactive p
 
 This flips the URLs across your env files (activating one, commenting the other) and prints the backend-specific next steps. Both adapters ship installed, so selection is purely configuration. `docker-compose.yml` provides local `mongodb` (`:27017`) and `postgres` (`:5432`) services — start the one for your backend with `docker compose up -d <service>`.
 
-On Postgres, create the Better Auth tables once with `pnpm --filter @repo/auth db:push` (and `db:migrate` in production); Payload auto-pushes its own schema in dev. For a hosted MongoDB, see [`docs/atlas-setup.md`](./docs/atlas-setup.md) for the full Atlas provisioning runbook (cluster, network access, per-database users).
+For a hosted MongoDB, see [`docs/atlas-setup.md`](./docs/atlas-setup.md) for the full Atlas provisioning runbook (cluster, network access, per-database users).
+
+### Migrations (Postgres)
+
+MongoDB is schemaless and needs no migrations. Postgres does, and the model is **auto-push in dev, versioned migrations in production**:
+
+- **Local dev** — Payload auto-pushes its schema on boot; sync the Better Auth tables once with `pnpm --filter @repo/auth db:push`. No migration files needed to iterate.
+- **Production** — `pnpm migrate` applies pending Payload *and* Better Auth migrations. It is gated on `DATABASE_URL`, so it is a clean no-op on the MongoDB backend. `apps/web/vercel.json` runs it ahead of the build, so a deploy migrates before serving traffic.
+
+Initial migrations are committed in `packages/payload/src/migrations` and `packages/auth/drizzle`. After changing a collection or the auth schema, regenerate and commit:
+
+```sh
+pnpm --filter web migrate:create <name>            # Payload (Postgres)
+pnpm --filter @repo/auth exec drizzle-kit generate # Better Auth
+```
+
+> **Preview deploys run the build command too.** Point each preview at its own database (e.g. a Neon branch) so a preview build never migrates the production schema.
 
 ---
 

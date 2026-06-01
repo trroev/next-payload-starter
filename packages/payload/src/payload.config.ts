@@ -70,7 +70,13 @@ export function createPayloadConfig({ baseDir }: CreatePayloadConfigOptions) {
         // `idType: "uuid"` keeps document IDs string-typed, matching the
         // MongoDB backend so `payload-types.ts` is identical (and CI's
         // stale-type check stable) regardless of the selected database.
-        postgresAdapter({ idType: "uuid", pool: { connectionString: url } })
+        // Migrations are colocated with the collections that define the schema;
+        // `push` stays on its dev default (auto-sync in dev, off in prod).
+        postgresAdapter({
+          idType: "uuid",
+          migrationDir: path.resolve(dirname, "migrations"),
+          pool: { connectionString: url },
+        })
       )
       .with({ driver: DB_DRIVERS.mongodb }, ({ url }) =>
         mongooseAdapter({ url })

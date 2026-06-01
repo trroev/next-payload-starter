@@ -9,7 +9,9 @@
     "includes": [
       "!**/payload-types.ts",
       "!**/importMap.js",
-      "!**/app/(payload)"
+      "!**/app/(payload)",
+      "!**/migrations",
+      "!packages/auth/drizzle"
     ]
   },
   "javascript": {

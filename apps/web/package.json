@@ -11,6 +11,8 @@
     "with-env": "dotenvx run --convention=nextjs --",
     "generate:types": "pnpm with-env payload generate:types",
     "generate:importmap": "pnpm with-env payload generate:importmap",
+    "migrate": "pnpm with-env payload migrate",
+    "migrate:create": "pnpm with-env payload migrate:create",
     "test": "vitest run",
     "postinstall": "if [ -z \"$CI\" ] && [ -f .env.keys ]; then pnpm generate:types && pnpm generate:importmap; fi",
     "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
