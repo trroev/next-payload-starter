@@ -35,7 +35,8 @@ Spin up a new repo from this template:
 gh repo create my-app --template trroev/next-payload-starter --public
 cd my-app
 pnpm install
-docker compose up -d                   # local MongoDB on :27017
+pnpm db:select postgres                # optional — use Postgres instead of the MongoDB default
+docker compose up -d                   # start the local DB service(s)
 pnpm dev                               # app at :3000, admin at /admin
 ```
 
@@ -64,9 +65,17 @@ dotenvx set SOME_SECRET "value" -f .env.production
 
 Each `@repo/env/<subsystem>` module validates only the keys it owns; see [`packages/env/README.md`](./packages/env/README.md) for the subpath map.
 
-### MongoDB
+### Database (MongoDB or Postgres)
 
-Local dev uses the Docker container in `docker-compose.yml`. For a hosted database, see [`docs/atlas-setup.md`](./docs/atlas-setup.md) for the full Atlas provisioning runbook (cluster, network access, per-database users).
+The starter supports either MongoDB (the default) or Postgres for both Payload and Better Auth. The active backend is selected at runtime by which connection URL is set — `MONGODB_URI` or `DATABASE_URL` — and setting both raises a clear startup error rather than silently picking one. Switch backends with:
+
+```sh
+pnpm db:select postgres   # or `mongodb`; omit the argument for an interactive prompt
+```
+
+This flips the URLs across your env files (activating one, commenting the other) and prints the backend-specific next steps. Both adapters ship installed, so selection is purely configuration. `docker-compose.yml` provides local `mongodb` (`:27017`) and `postgres` (`:5432`) services — start the one for your backend with `docker compose up -d <service>`.
+
+On Postgres, create the Better Auth tables once with `pnpm --filter @repo/auth db:push` (and `db:migrate` in production); Payload auto-pushes its own schema in dev. For a hosted MongoDB, see [`docs/atlas-setup.md`](./docs/atlas-setup.md) for the full Atlas provisioning runbook (cluster, network access, per-database users).
 
 ---
 
