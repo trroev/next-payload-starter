@@ -70,14 +70,32 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    name: E2E
+    name: E2E (${{ matrix.backend }})
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [mongodb, postgres]
+    # Both containers run on every leg; the "Configure backend" step sets only
+    # the env var for the leg's backend, so the resolver sees exactly one.
     services:
       mongo:
         image: mongo:7
         ports:
           - 27017:27017
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      MONGODB_URI: mongodb://localhost:27017/e2e
       BETTER_AUTH_SECRET: e2e-better-auth-secret-min-32-chars-long
       BETTER_AUTH_URL: http://localhost:3000
       BASE_URL: http://localhost:3000
@@ -87,6 +105,17 @@ jobs:
       CLOUDINARY_API_SECRET: e2e-secret
     steps:
       - uses: actions/checkout@v6
+      - name: Configure backend
+        if: env.ACT != 'true'
+        shell: bash
+        run: |
+          if [ "${{ matrix.backend }}" = "postgres" ]; then
+            echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/e2e" >> "$GITHUB_ENV"
+          else
+            echo "MONGODB_URI=mongodb://localhost:27017/e2e" >> "$GITHUB_ENV"
+          fi
       - name: E2E
         if: env.ACT != 'true'
         uses: ./tooling/github/ci/e2e
+        with:
+          backend: ${{ matrix.backend }}

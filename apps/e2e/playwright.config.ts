@@ -1,10 +1,26 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig, devices } from "@playwright/test"
+import { provisionTestDatabase } from "./src/fixtures/provision-db"
 import { getOrInitTestEnv } from "./src/fixtures/test-env"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-const { mongoUri, baseUrl } = getOrInitTestEnv()
+
+// Resolve and provision the per-run database here, in config evaluation, so it
+// completes before Playwright launches the web server (which boots in
+// production mode with Postgres `push` off and therefore needs a migrated
+// schema already in place). `getOrInitTestEnv` rewrites the connection string
+// before `@repo/env/database` is first evaluated, so it (and `DB_DRIVERS`
+// below) is imported dynamically rather than statically.
+const testEnv = await getOrInitTestEnv()
+await provisionTestDatabase(testEnv)
+
+const { DB_DRIVERS } = await import("@repo/env/database")
+const { driver, dbUri, baseUrl } = testEnv
+const webServerEnv: Record<string, string> =
+  driver === DB_DRIVERS.postgres
+    ? { DATABASE_URL: dbUri }
+    : { MONGODB_URI: dbUri }
 
 const isCi = !!process.env.CI
 
@@ -28,7 +44,7 @@ export default defineConfig({
     url: baseUrl,
     timeout: 240_000,
     reuseExistingServer: !isCi,
-    env: { MONGODB_URI: mongoUri },
+    env: webServerEnv,
     stdout: "pipe",
     stderr: "pipe",
   },

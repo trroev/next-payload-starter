@@ -14,12 +14,14 @@
     "@repo/env": "workspace:*",
     "@repo/payload": "workspace:*",
     "mongodb": "^6.10.0",
-    "payload": "^3.84.1"
+    "payload": "^3.84.1",
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@repo/tsconfig": "workspace:*",
     "@types/node": "^22.15.3",
+    "@types/pg": "catalog:",
     "typescript": "catalog:"
   }
 }
