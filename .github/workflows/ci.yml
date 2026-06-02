@@ -109,6 +109,16 @@ jobs:
         if: env.ACT != 'true'
         shell: bash
         run: |
+          # The committed app env files pin a backend (MONGODB_URI by default),
+          # which is loaded by dotenvx (generate:types) and @next/env (next
+          # start). Strip both connection vars on the runner so the suite uses
+          # exactly the backend selected below — otherwise the postgres leg sees
+          # both DATABASE_URL and MONGODB_URI and the resolver rejects it.
+          for f in apps/web/.env.development apps/web/.env.production; do
+            if [ -f "$f" ]; then
+              sed -i -E '/^(MONGODB_URI|DATABASE_URL)=/d' "$f"
+            fi
+          done
           if [ "${{ matrix.backend }}" = "postgres" ]; then
             echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/e2e" >> "$GITHUB_ENV"
           else
