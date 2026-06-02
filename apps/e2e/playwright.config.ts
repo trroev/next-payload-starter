@@ -21,15 +21,17 @@ if (testEnv.isInitialRun) {
 
 const { DB_DRIVERS } = await import("@repo/env/database")
 const { driver, dbUri, baseUrl } = testEnv
-// `NODE_ENV=production` runs the built server as it would in production:
-// migrations are authoritative and the Postgres adapter's dev schema `push` is
-// disabled. Without this the server boots in development mode and `push` syncs
-// the schema to Payload's tables only, dropping the Better Auth (Drizzle)
-// tables the migrations created.
+// The schema is provisioned by migrations, so the Postgres adapter must not
+// run its dev-mode schema `push` on connect: that sync only knows Payload's
+// tables and would drop the Better Auth (Drizzle) tables the migrations
+// created. `PAYLOAD_MIGRATING=true` is the adapter's explicit "migrations own
+// the schema, skip push" signal — used here instead of `NODE_ENV=production`
+// because `next start` runs under dotenvx's nextjs convention, which resets
+// NODE_ENV to development before the adapter connects.
 const webServerEnv: Record<string, string> =
   driver === DB_DRIVERS.postgres
-    ? { DATABASE_URL: dbUri, NODE_ENV: "production" }
-    : { MONGODB_URI: dbUri, NODE_ENV: "production" }
+    ? { DATABASE_URL: dbUri, PAYLOAD_MIGRATING: "true" }
+    : { MONGODB_URI: dbUri }
 
 const isCi = !!process.env.CI
 
