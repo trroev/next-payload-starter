@@ -26,6 +26,12 @@ const webServerEnv: Record<string, string> =
     ? { DATABASE_URL: dbUri }
     : { MONGODB_URI: dbUri }
 
+// TEMP DIAGNOSTIC: the db + host the web server is pointed at, and whether this
+// evaluation provisioned. Compare against the [e2e-provision] line.
+process.stdout.write(
+  `\n[e2e-config] isInitialRun=${testEnv.isInitialRun} driver=${driver} webServerDb="${new URL(dbUri).pathname}" host="${new URL(dbUri).host}"\n`
+)
+
 const isCi = !!process.env.CI
 
 export default defineConfig({
