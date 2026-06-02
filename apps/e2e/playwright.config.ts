@@ -21,16 +21,15 @@ if (testEnv.isInitialRun) {
 
 const { DB_DRIVERS } = await import("@repo/env/database")
 const { driver, dbUri, baseUrl } = testEnv
+// `NODE_ENV=production` runs the built server as it would in production:
+// migrations are authoritative and the Postgres adapter's dev schema `push` is
+// disabled. Without this the server boots in development mode and `push` syncs
+// the schema to Payload's tables only, dropping the Better Auth (Drizzle)
+// tables the migrations created.
 const webServerEnv: Record<string, string> =
   driver === DB_DRIVERS.postgres
-    ? { DATABASE_URL: dbUri }
-    : { MONGODB_URI: dbUri }
-
-// TEMP DIAGNOSTIC: the db + host the web server is pointed at, and whether this
-// evaluation provisioned. Compare against the [e2e-provision] line.
-process.stdout.write(
-  `\n[e2e-config] isInitialRun=${testEnv.isInitialRun} driver=${driver} webServerDb="${new URL(dbUri).pathname}" host="${new URL(dbUri).host}"\n`
-)
+    ? { DATABASE_URL: dbUri, NODE_ENV: "production" }
+    : { MONGODB_URI: dbUri, NODE_ENV: "production" }
 
 const isCi = !!process.env.CI
 

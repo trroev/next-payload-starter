@@ -84,20 +84,4 @@ export const provisionTestDatabase = async ({
   }
   await createPostgresDatabase({ adminUri, dbName })
   runPostgresMigrations({ dbUri })
-
-  // TEMP DIAGNOSTIC: confirm which db was migrated and what tables landed.
-  const probe = new Client({ connectionString: dbUri })
-  await probe.connect()
-  try {
-    const { rows } = await probe.query<{ table_name: string }>(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name"
-    )
-    const host = new URL(dbUri).host
-    const tables = rows.map((r) => r.table_name).join(", ")
-    process.stdout.write(
-      `\n[e2e-provision] migrated db="${dbName}" host="${host}" tables=[${tables}]\n`
-    )
-  } finally {
-    await probe.end()
-  }
 }
