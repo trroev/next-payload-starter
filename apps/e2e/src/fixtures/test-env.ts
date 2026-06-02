@@ -24,6 +24,14 @@ type TestEnv = {
   readonly baseUrl: string
 }
 
+/**
+ * `isInitialRun` is true only for the evaluation that first set up the per-run
+ * database — i.e. the run-initializing process. Playwright re-imports this
+ * config in each worker/retry process (which inherit the `E2E_*` env vars), so
+ * provisioning must run only when this is true to avoid re-creating the db.
+ */
+type InitTestEnv = TestEnv & { readonly isInitialRun: boolean }
+
 const buildTestDbName = (): string => {
   const suffix = randomBytes(4).toString("hex")
   return `e2e_test_${Date.now()}_${suffix}`
@@ -73,7 +81,7 @@ const buildAdminUri = ({ baseUri }: { readonly baseUri: string }): string => {
  * Idempotent: the first call performs the rewrite and persists per-run state in
  * `process.env`; later same-process calls (e.g. from `globalSetup`) read it back.
  */
-export const getOrInitTestEnv = async (): Promise<TestEnv> => {
+export const getOrInitTestEnv = async (): Promise<InitTestEnv> => {
   const existingDriver = process.env[TEST_ENV_KEYS.driver] as
     | DbDriver
     | undefined
@@ -86,6 +94,7 @@ export const getOrInitTestEnv = async (): Promise<TestEnv> => {
       dbUri: existingUri,
       adminUri: process.env[TEST_ENV_KEYS.adminUri] ?? null,
       baseUrl: process.env[TEST_ENV_KEYS.baseUrl] ?? DEFAULT_BASE_URL,
+      isInitialRun: false,
     }
   }
 
@@ -119,8 +128,8 @@ export const getOrInitTestEnv = async (): Promise<TestEnv> => {
   }
   process.env[TEST_ENV_KEYS.baseUrl] = baseUrl
 
-  return { driver, dbName, dbUri, adminUri, baseUrl }
+  return { driver, dbName, dbUri, adminUri, baseUrl, isInitialRun: true }
 }
 
-export type { TestEnv }
+export type { InitTestEnv, TestEnv }
 export { TEST_ENV_KEYS }

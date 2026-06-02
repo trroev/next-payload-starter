@@ -21,6 +21,16 @@ const createPostgresDatabase = async ({
     // The database name is a SQL identifier, so it can't be a bound parameter;
     // it's harness-generated (no user input), so interpolation is safe here.
     await client.query(`CREATE DATABASE "${dbName}"`)
+  } catch (error) {
+    // 42P04 = duplicate_database: a re-evaluated provision already created it.
+    // The name is unique per run, so tolerating this is safe.
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? error.code
+        : undefined
+    if (code !== "42P04") {
+      throw error
+    }
   } finally {
     await client.end()
   }

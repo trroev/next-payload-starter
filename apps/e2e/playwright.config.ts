@@ -13,7 +13,11 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 // before `@repo/env/database` is first evaluated, so it (and `DB_DRIVERS`
 // below) is imported dynamically rather than statically.
 const testEnv = await getOrInitTestEnv()
-await provisionTestDatabase(testEnv)
+// Only the run-initializing evaluation provisions; worker/retry processes
+// re-import this config but inherit the per-run env and must not re-create it.
+if (testEnv.isInitialRun) {
+  await provisionTestDatabase(testEnv)
+}
 
 const { DB_DRIVERS } = await import("@repo/env/database")
 const { driver, dbUri, baseUrl } = testEnv
