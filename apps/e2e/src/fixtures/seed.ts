@@ -59,14 +59,19 @@ export const seedPublishedPost = async (): Promise<SeededPost> => {
       _status: "published",
     },
   })
-  // `payload.destroy()` resets adapter state but the Postgres adapter's destroy
-  // leaves its pg connection pool open. Left open in the Playwright process, the
-  // pool's idle client would be terminated by `globalTeardown`'s DROP DATABASE
-  // and emit an unhandled pool `error`, crashing the process. End the pool
-  // explicitly (no-op on MongoDB, which has no `pool`), then destroy.
-  await payload.destroy()
-  const { pool } = payload.db as { pool?: { end: () => Promise<void> } }
-  await pool?.end()
+  // The Postgres adapter keeps its connection pool open in this process after
+  // seeding. globalTeardown's DROP DATABASE terminates that pool's connection;
+  // without an `error` listener the pool emits an unhandled `error` and crashes
+  // the process. Attach a no-op listener rather than closing the pool — pool
+  // `end()` can hang waiting on a client the adapter never releases. Teardown's
+  // ALLOW_CONNECTIONS-false + force-drop prevents the pool from reconnecting, so
+  // ignoring the termination is safe. No-op on MongoDB (no `pool`).
+  const { pool } = payload.db as {
+    pool?: { on: (event: "error", listener: () => void) => void }
+  }
+  pool?.on("error", () => {
+    // Connection terminated by teardown's DROP DATABASE; safe to ignore.
+  })
   return {
     id: String(created.id),
     title,
