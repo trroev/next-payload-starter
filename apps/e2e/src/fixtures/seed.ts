@@ -59,10 +59,14 @@ export const seedPublishedPost = async (): Promise<SeededPost> => {
       _status: "published",
     },
   })
-  // Close the connection pool: on Postgres it would otherwise stay open in the
-  // Playwright process, and `globalTeardown`'s DROP DATABASE (which terminates
-  // the db's connections) would crash the process with an unhandled pool error.
+  // `payload.destroy()` resets adapter state but the Postgres adapter's destroy
+  // leaves its pg connection pool open. Left open in the Playwright process, the
+  // pool's idle client would be terminated by `globalTeardown`'s DROP DATABASE
+  // and emit an unhandled pool `error`, crashing the process. End the pool
+  // explicitly (no-op on MongoDB, which has no `pool`), then destroy.
   await payload.destroy()
+  const { pool } = payload.db as { pool?: { end: () => Promise<void> } }
+  await pool?.end()
   return {
     id: String(created.id),
     title,
