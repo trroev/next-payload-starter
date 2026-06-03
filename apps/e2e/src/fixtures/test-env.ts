@@ -67,6 +67,20 @@ const buildAdminUri = ({ baseUri }: { readonly baseUri: string }): string => {
 }
 
 /**
+ * The schema is provisioned by migrations, so any Payload connection in this
+ * process (notably the `globalSetup` seed's `getPayload`) must skip the Postgres
+ * adapter's dev-mode schema `push`: that sync only knows Payload's tables and
+ * would drop the Better Auth (Drizzle) tables the migrations created.
+ * `PAYLOAD_MIGRATING` is the adapter's signal for "migrations own the schema".
+ */
+const markPostgresMigrating = async (driver: DbDriver): Promise<void> => {
+  const { DB_DRIVERS } = await import("@repo/env/database")
+  if (driver === DB_DRIVERS.postgres) {
+    process.env.PAYLOAD_MIGRATING = "true"
+  }
+}
+
+/**
  * Resolve (and on first call, initialise) the per-run database for the active
  * backend.
  *
@@ -88,6 +102,7 @@ export const getOrInitTestEnv = async (): Promise<InitTestEnv> => {
   const existingDbName = process.env[TEST_ENV_KEYS.dbName]
   const existingUri = process.env[TEST_ENV_KEYS.dbUri]
   if (existingDriver && existingDbName && existingUri) {
+    await markPostgresMigrating(existingDriver)
     return {
       driver: existingDriver,
       dbName: existingDbName,
@@ -127,6 +142,7 @@ export const getOrInitTestEnv = async (): Promise<InitTestEnv> => {
     process.env[TEST_ENV_KEYS.adminUri] = adminUri
   }
   process.env[TEST_ENV_KEYS.baseUrl] = baseUrl
+  await markPostgresMigrating(driver)
 
   return { driver, dbName, dbUri, adminUri, baseUrl, isInitialRun: true }
 }
