@@ -18,10 +18,10 @@
     "clean": "rm -rf .turbo .next dist storybook-static coverage *.tsbuildinfo test-results playwright-report"
   },
   "dependencies": {
-    "@payloadcms/db-mongodb": "^3.84.1",
-    "@payloadcms/live-preview-react": "^3.84.1",
-    "@payloadcms/next": "^3.84.1",
-    "@payloadcms/plugin-seo": "^3.84.1",
+    "@payloadcms/db-mongodb": "^3.85.0",
+    "@payloadcms/live-preview-react": "^3.85.0",
+    "@payloadcms/next": "^3.85.0",
+    "@payloadcms/plugin-seo": "^3.85.0",
     "@payloadcms/richtext-lexical": "catalog:",
     "@remixicon/react": "^4.9.0",
     "@repo/auth": "workspace:*",
@@ -37,7 +37,7 @@
     "better-auth": "^1.2.8",
     "minisearch": "^7.2.0",
     "next": "catalog:",
-    "payload": "^3.84.1",
+    "payload": "^3.85.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-error-boundary": "^6.1.1",

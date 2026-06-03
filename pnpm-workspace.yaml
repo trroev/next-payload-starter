@@ -4,14 +4,14 @@ packages:
 
 catalog:
   '@better-fetch/fetch': 1.1.21
-  '@payloadcms/db-postgres': ^3.84.1
-  '@payloadcms/richtext-lexical': 3.84.1
+  '@payloadcms/db-postgres': ^3.85.0
+  '@payloadcms/richtext-lexical': 3.85.0
   '@types/pg': ^8.20.0
   "@types/react": 19.2.2
   "@types/react-dom": 19.2.2
   drizzle-kit: ^0.31.10
   drizzle-orm: ^0.45.2
-  next: 16.2.4
+  next: 16.2.7
   pg: ^8.21.0
   react: ^19.2.0
   react-dom: ^19.2.0

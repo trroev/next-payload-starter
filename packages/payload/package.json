@@ -24,10 +24,10 @@
   },
   "dependencies": {
     "@better-fetch/fetch": "catalog:",
-    "@payloadcms/db-mongodb": "^3.84.1",
+    "@payloadcms/db-mongodb": "^3.85.0",
     "@payloadcms/db-postgres": "catalog:",
-    "@payloadcms/plugin-cloud-storage": "^3.84.1",
-    "@payloadcms/plugin-seo": "^3.84.1",
+    "@payloadcms/plugin-cloud-storage": "^3.85.0",
+    "@payloadcms/plugin-seo": "^3.85.0",
     "@payloadcms/richtext-lexical": "catalog:",
     "@repo/env": "workspace:*",
     "@repo/logger": "workspace:*",
@@ -50,7 +50,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^5.2.0",
     "jsdom": "^29.1.1",
-    "payload": "^3.84.1",
+    "payload": "^3.85.0",
     "typescript": "catalog:",
     "vitest": "^3.2.4"
   }
