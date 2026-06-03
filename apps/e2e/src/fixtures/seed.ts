@@ -59,6 +59,10 @@ export const seedPublishedPost = async (): Promise<SeededPost> => {
       _status: "published",
     },
   })
+  // Close the connection pool: on Postgres it would otherwise stay open in the
+  // Playwright process, and `globalTeardown`'s DROP DATABASE (which terminates
+  // the db's connections) would crash the process with an unhandled pool error.
+  await payload.destroy()
   return {
     id: String(created.id),
     title,
