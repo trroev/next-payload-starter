@@ -432,6 +432,7 @@ const pruneBackend = (backend) => {
     deleteIfExists(join(repoRoot, "packages", "auth", "src", "schema.ts"))
     deleteIfExists(join(repoRoot, "packages", "auth", "drizzle.config.ts"))
     deleteIfExists(join(repoRoot, "packages", "auth", "drizzle"))
+    deleteIfExists(join(repoRoot, "packages", "payload", "src", "migrations"))
   }
 
   process.stdout.write("Removing orphaned catalog entries...\n")
