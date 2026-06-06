@@ -57,6 +57,19 @@ const ENV_FILES = [
 
 const USAGE = "Usage: pnpm db:select <mongodb|postgres> [--prune]\n"
 
+// Top-level regex constants used by the prune codemods
+const DB_MATCH_REGEX =
+  / {4}db: match\(resolveDatabase\(\)\)[\s\S]*?\.exhaustive\(\),/
+const ADAPTER_FN_REGEX =
+  /const createDatabaseAdapter = \(\): BetterAuthOptions\["database"\] =>[\s\S]*?\.exhaustive\(\)/
+const MONGODB_SERVICE_REGEX =
+  / {2}mongodb:\n {4}image: mongo:8\n {4}ports:\n {6}- "27017:27017"\n {4}volumes:\n {6}- mongodb_data:\/data\/db\n\n/
+const POSTGRES_SERVICE_REGEX =
+  / {2}postgres:\n {4}image: postgres:17\n {4}ports:\n {6}- "5432:5432"\n {4}environment:\n {6}POSTGRES_USER: postgres\n {6}POSTGRES_PASSWORD: postgres\n {6}POSTGRES_DB: starter\n {4}volumes:\n {6}- postgres_data:\/var\/lib\/postgresql\/data\n\n/
+const CATALOG_BLOCK_START = /^catalog:/
+const CATALOG_BLOCK_EXIT = /^[a-zA-Z]/
+const CATALOG_ENTRY_KEY = /^ {2}['"]?([^'":\s]+)['"]?\s*:/
+
 /**
  * Comment or uncomment the first line declaring `key` in `content`, preserving
  * indentation and the existing value. Returns the rewritten content and whether
@@ -167,17 +180,11 @@ const prunePayloadConfig = (backend) => {
   )
   let content = readFileSync(filePath, "utf8")
 
-  // Common: remove DB_DRIVERS from the env/database import
   content = content.replace(
     'import { DB_DRIVERS, resolveDatabase } from "@repo/env/database"',
     'import { resolveDatabase } from "@repo/env/database"'
   )
-  // Common: remove the ts-pattern import (only used for the db match)
   content = removeLine(content, 'import { match } from "ts-pattern"')
-
-  // Replace the multi-line db: match(...).exhaustive(), block
-  const dbMatchRegex =
-    /    db: match\(resolveDatabase\(\)\)[\s\S]*?\.exhaustive\(\),/
 
   if (backend === "postgres") {
     content = removeLine(
@@ -185,11 +192,11 @@ const prunePayloadConfig = (backend) => {
       'import { mongooseAdapter } from "@payloadcms/db-mongodb"'
     )
     content = content.replace(
-      dbMatchRegex,
+      DB_MATCH_REGEX,
       [
         "    db: postgresAdapter({",
-        "      idType: \"uuid\",",
-        "      migrationDir: path.resolve(dirname, \"migrations\"),",
+        '      idType: "uuid",',
+        '      migrationDir: path.resolve(dirname, "migrations"),',
         "      pool: { connectionString: resolveDatabase().url },",
         "    }),",
       ].join("\n")
@@ -200,7 +207,7 @@ const prunePayloadConfig = (backend) => {
       'import { postgresAdapter } from "@payloadcms/db-postgres"'
     )
     content = content.replace(
-      dbMatchRegex,
+      DB_MATCH_REGEX,
       "    db: mongooseAdapter({ url: resolveDatabase().url }),"
     )
   }
@@ -212,17 +219,11 @@ const pruneAuthConfig = (backend) => {
   const filePath = join(repoRoot, "packages", "auth", "src", "index.ts")
   let content = readFileSync(filePath, "utf8")
 
-  // Common: remove DB_DRIVERS from env/database import
   content = content.replace(
     'import { DB_DRIVERS, resolveDatabase } from "@repo/env/database"',
     'import { resolveDatabase } from "@repo/env/database"'
   )
-  // Common: remove ts-pattern import
   content = removeLine(content, 'import { match } from "ts-pattern"')
-
-  // Replace the full createDatabaseAdapter function
-  const adapterFnRegex =
-    /const createDatabaseAdapter = \(\): BetterAuthOptions\["database"\] =>[\s\S]*?\.exhaustive\(\)/
 
   if (backend === "postgres") {
     content = removeLine(
@@ -231,7 +232,7 @@ const pruneAuthConfig = (backend) => {
     )
     content = removeLine(content, 'import { MongoClient } from "mongodb"')
     content = content.replace(
-      adapterFnRegex,
+      ADAPTER_FN_REGEX,
       [
         'const createDatabaseAdapter = (): BetterAuthOptions["database"] => {',
         "  const db = drizzle({",
@@ -247,7 +248,10 @@ const pruneAuthConfig = (backend) => {
       content,
       'import { drizzleAdapter } from "better-auth/adapters/drizzle"'
     )
-    content = removeLine(content, 'import { drizzle } from "drizzle-orm/node-postgres"')
+    content = removeLine(
+      content,
+      'import { drizzle } from "drizzle-orm/node-postgres"'
+    )
     content = removeLine(content, 'import { Pool } from "pg"')
     content = removeLine(
       content,
@@ -258,7 +262,7 @@ const pruneAuthConfig = (backend) => {
       "const schema = { account, session, user, verification }"
     )
     content = content.replace(
-      adapterFnRegex,
+      ADAPTER_FN_REGEX,
       [
         'const createDatabaseAdapter = (): BetterAuthOptions["database"] =>',
         "  mongodbAdapter(new MongoClient(resolveDatabase().url).db(), { transaction: false })",
@@ -270,7 +274,10 @@ const pruneAuthConfig = (backend) => {
   writeFileSync(filePath, content)
 }
 
-const prunePackageJson = (pkgPath, { deps = [], devDeps = [], scripts = [] }) => {
+const prunePackageJson = (
+  pkgPath,
+  { deps = [], devDeps = [], scripts = [] }
+) => {
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"))
   for (const key of deps) {
     delete pkg.dependencies?.[key]
@@ -289,39 +296,35 @@ const pruneDockerCompose = (service) => {
   let content = readFileSync(filePath, "utf8")
 
   if (service === "mongodb") {
-    content = content.replace(
-      /  mongodb:\n    image: mongo:8\n    ports:\n      - "27017:27017"\n    volumes:\n      - mongodb_data:\/data\/db\n\n/,
-      ""
-    )
+    content = content.replace(MONGODB_SERVICE_REGEX, "")
     content = content.replace("  mongodb_data:\n", "")
   } else {
-    content = content.replace(
-      /  postgres:\n    image: postgres:17\n    ports:\n      - "5432:5432"\n    environment:\n      POSTGRES_USER: postgres\n      POSTGRES_PASSWORD: postgres\n      POSTGRES_DB: starter\n    volumes:\n      - postgres_data:\/var\/lib\/postgresql\/data\n\n/,
-      ""
-    )
+    content = content.replace(POSTGRES_SERVICE_REGEX, "")
     content = content.replace("  postgres_data:\n", "")
   }
 
   writeFileSync(filePath, content)
 }
 
-const pruneOrphanedCatalogEntries = () => {
-  const workspacePath = join(repoRoot, "pnpm-workspace.yaml")
-  const workspaceContent = readFileSync(workspacePath, "utf8")
-
-  // Collect all package.json files in apps/* and packages/*
-  const packageJsonPaths = []
+const collectWorkspacePackageJsonPaths = () => {
+  const paths = []
   for (const dir of ["apps", "packages"]) {
     const base = join(repoRoot, dir)
-    if (!existsSync(base)) continue
+    if (!existsSync(base)) {
+      continue
+    }
     for (const name of readdirSync(base)) {
       const pkgPath = join(base, name, "package.json")
-      if (existsSync(pkgPath)) packageJsonPaths.push(pkgPath)
+      if (existsSync(pkgPath)) {
+        paths.push(pkgPath)
+      }
     }
   }
+  return paths
+}
 
-  // Collect all dep names referenced as "catalog:" in remaining package.json files
-  const referencedKeys = new Set()
+const collectReferencedCatalogKeys = (packageJsonPaths) => {
+  const keys = new Set()
   for (const pkgPath of packageJsonPaths) {
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"))
     for (const section of [
@@ -329,34 +332,48 @@ const pruneOrphanedCatalogEntries = () => {
       pkg.devDependencies,
       pkg.peerDependencies,
     ]) {
-      if (!section) continue
+      if (!section) {
+        continue
+      }
       for (const [key, value] of Object.entries(section)) {
         if (typeof value === "string" && value.startsWith("catalog")) {
-          referencedKeys.add(key)
+          keys.add(key)
         }
       }
     }
   }
+  return keys
+}
 
-  // Remove entries from the `catalog:` block only (not `catalogs:` sub-blocks).
-  // Track which YAML block we're in by watching for the top-level `catalog:` key.
+const isOrphanedCatalogLine = (line, referencedKeys) => {
+  const entryMatch = line.match(CATALOG_ENTRY_KEY)
+  if (!entryMatch) {
+    return false
+  }
+  return !referencedKeys.has(entryMatch[1])
+}
+
+const pruneOrphanedCatalogEntries = () => {
+  const workspacePath = join(repoRoot, "pnpm-workspace.yaml")
+  const workspaceContent = readFileSync(workspacePath, "utf8")
+  const packageJsonPaths = collectWorkspacePackageJsonPaths()
+  const referencedKeys = collectReferencedCatalogKeys(packageJsonPaths)
+
+  // Remove entries from the `catalog:` block only — track YAML block state.
   const lines = workspaceContent.split("\n")
   let inCatalogBlock = false
   const filtered = lines.filter((line) => {
-    if (/^catalog:/.test(line)) {
+    if (CATALOG_BLOCK_START.test(line)) {
       inCatalogBlock = true
       return true
     }
-    // Any non-blank, non-comment line at column-0 exits the catalog block
-    if (inCatalogBlock && /^[a-zA-Z]/.test(line)) {
+    if (inCatalogBlock && CATALOG_BLOCK_EXIT.test(line)) {
       inCatalogBlock = false
     }
-    if (!inCatalogBlock) return true
-
-    // Inside catalog block: check if this 2-space-indented entry is still used
-    const entryMatch = line.match(/^  ['"]?([^'":\s]+)['"]?\s*:/)
-    if (!entryMatch) return true
-    return referencedKeys.has(entryMatch[1])
+    if (!inCatalogBlock) {
+      return true
+    }
+    return !isOrphanedCatalogLine(line, referencedKeys)
   })
 
   const result = filtered.join("\n")
@@ -372,7 +389,10 @@ const deleteIfExists = (filePath) => {
 }
 
 const runInstall = () => {
-  execSync("pnpm install", { stdio: "inherit", cwd: repoRoot })
+  execSync("pnpm install --no-frozen-lockfile", {
+    stdio: "inherit",
+    cwd: repoRoot,
+  })
 }
 
 const pruneBackend = (backend) => {
